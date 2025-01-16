@@ -8,8 +8,8 @@ create_annotations <- function(dds) {
   annotations <- annotation_datasets(dds)
   anns <- annotations$anns
   anno_df <- annotations$anno_df
-#   saveRDS(anns, anns_path)
-#   saveRDS(anno_df, anno_df_path)
+  saveRDS(anns, anns_path)
+  saveRDS(anno_df, anno_df_path)
   remove(annotations)
 
   assign("anns", anns, envir = parent.frame())
