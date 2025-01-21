@@ -13,12 +13,16 @@ prepare_workspace <- function(params) {
     warning("Failed to load experiment metadata: ", e$message)
   })
 
-  # tryCatch({
-  #   gse <- readRDS(file.path("analyses_data", "gse.RDS"))
-  #   assign("gse", gse, envir = parent.frame())
-  # }, error = function(e) {
-  #   warning("Failed to load gse: ", e$message)
-  # })
+  if (purrr::pluck(params, "load_gse", .default = FALSE)) {
+    tryCatch({
+      gse <- readRDS(file.path("analyses_data", "gse.RDS"))
+      assign("gse", gse, envir = parent.frame())
+      message("GSE object loaded and saved in the workspace as 'gse'")
+    }, error = function(e) {
+      warning("Failed to load gse: ", e$message)
+    })
+  } else warning("'load_gse' set to false")
+
 
   if (purrr::pluck(params, "load_complete_dds", .default = FALSE)) {
     tryCatch({
