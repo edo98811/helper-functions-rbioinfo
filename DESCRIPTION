@@ -1,93 +1,11 @@
-Package: GeneTonic
-Title: Enjoy Analyzing And Integrating The Results From Differential Expression 
-    Analysis And Functional Enrichment Analysis
-Version: 3.1.3
-Date: 2025-01-29
+Package: rbioinfoHelper
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
 Authors@R: 
-    c(
-        person(
-            given = "Federico", family = "Marini", role = c("aut", "cre"), 
-            email = "marinif@uni-mainz.de", comment = c(ORCID = "0000-0003-3252-7758")
-        ),
-		    person(
-            given = "Annekathrin", family = "Ludt", role = c("aut"), 
-            email = "anneludt@uni-mainz.de", comment = c(ORCID = "0000-0002-2475-4945")
-        )
-    )
-Description: This package provides functionality to combine the existing pieces 
-    of the transcriptome data and results, making it easier to generate 
-    insightful observations and hypothesis. Its usage is made easy with a Shiny 
-    application, combining the benefits of interactivity and reproducibility
-    e.g. by capturing the features and gene sets of interest highlighted during 
-    the live session, and creating an HTML report as an artifact where text, 
-    code, and output coexist. Using the GeneTonicList as a standardized container
-    for all the required components, it is possible to simplify the generation 
-    of multiple visualizations and summaries.
-Depends:
-    R (>= 4.0.0)
-Imports:
-    AnnotationDbi,
-    backbone,
-    bs4Dash (>= 2.0.0),
-    circlize,
-    colorspace,
-	  colourpicker,
-    ComplexHeatmap,
-    ComplexUpset,
-    dendextend,
-    DESeq2,
-    dplyr,
-    DT,
-    dynamicTreeCut,
-    expm,
-    ggforce,
-    ggplot2 (>= 3.5.0),
-    ggrepel,
-    ggridges,
-    GO.db,
-    graphics,
-    grDevices,
-    grid,
-    igraph,
-    matrixStats,
-    methods,
-    mosdef (>= 1.1.0),
-    plotly,
-    RColorBrewer,
-    rintrojs,
-    rlang,
-    rmarkdown,
-    S4Vectors,
-    scales,
-    shiny,
-    shinyAce,
-    shinycssloaders,
-    shinyWidgets,
-    stats,
-    SummarizedExperiment,
-    tidyr,
-    tippy,
-    tools,
-    utils,
-    viridis,
-    visNetwork
-Suggests:
-    knitr,
-    BiocStyle,
-    htmltools,
-    clusterProfiler,
-    macrophage,
-    org.Hs.eg.db,
-    magrittr,
-    testthat (>= 2.1.0)
-License: MIT + file LICENSE
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+Description: What the package does (one paragraph).
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
 Encoding: UTF-8
-VignetteBuilder: knitr
-URL: https://github.com/federicomarini/GeneTonic
-BugReports: https://github.com/federicomarini/GeneTonic/issues
-RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
-biocViews:
-    GUI, GeneExpression, Software, Transcription, Transcriptomics, Visualization,
-    DifferentialExpression, Pathways, ReportWriting, GeneSetEnrichment, 
-    Annotation, GO, ShinyApps
+RoxygenNote: 7.3.2
