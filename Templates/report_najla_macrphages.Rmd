@@ -1,0 +1,711 @@
+---
+title: >
+  Exploratory Data Analysis 
+author: >
+  In vitro stimulation of Macrophages Analysis, by treatment </br>
+  Najla Abassi and Federico Marini </br>
+  University Medical Center - Mainz (Germany)
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+    code_folding: show
+    number_sections: true
+    theme: cosmo
+date: "`r BiocStyle::doc_date()`" 
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r echo = F}
+options(error = function(){    # scream on error
+  beepr::beep(9)
+  Sys.sleep(1)
+  }
+)
+
+.Last <- function() {          # Beep when knitting ends
+  beepr::beep(8)
+  Sys.sleep(7)
+}
+
+```
+
+```{r setup, include=FALSE, cache=FALSE, eval = TRUE, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  fig.path = paste0('./figures/'),
+  fig.align = 'center',
+  fig.show = 'asis',
+  eval = TRUE,
+  fig.width = 10,
+  fig.height = 7,
+  tidy = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  size = 'small',
+  comment = "##",
+  echo = TRUE,
+  results = 'markup',
+  dev = c("png", "pdf")
+)
+options(replace.assign = TRUE,
+        width = 80)
+```
+
+```{r loadLibraries,results='hide'}
+library("SummarizedExperiment")
+library("ggplot2")
+library("limma")
+library("pcaExplorer")
+library("DESeq2")
+library("GeneTonic")
+library("DT")
+library("org.Mm.eg.db")
+library("biomaRt")
+library("clusterProfiler")
+library("topGO")
+```
+
+# Import the `dds` object
+
+```{r}
+dds <- readRDS("_dds/dds_macrophage_ptprz.RDS")
+
+dds
+```
+Load annotation ...
+
+```{r}
+anno_df <- readRDS("anno_df.RDS")
+anns <- readRDS("anns.RDS")
+```
+
+```{r}
+dds$condition
+```
+
+As we saw in the previous report, the samples were clustered by `condition`, which represent the phenotype. So it can make sense to subset our data by treatment:
+
+  
+```{r}
+dds_ctrl <- dds[,dds$condition == "ctrl"]
+dds_LPSIFNy <- dds[,dds$condition == "LPSIFNy"]
+dds_IL4 <- dds[,dds$condition == "IL4"]
+
+dds_ctrl
+dds_LPSIFNy
+dds_IL4
+```
+
+```{r}
+dds_ctrl$group <- droplevels(dds_ctrl$group)
+dds_LPSIFNy$group <- droplevels(dds_LPSIFNy$group)
+dds_IL4$group <- droplevels(dds_IL4$group)
+```
+
+```{r echo=FALSE, eval=TRUE}
+# this is a collection of functions to make the results nicer
+createLinkGO <- function(val) {
+  sprintf('<a href="http://amigo.geneontology.org/amigo/term/%s" target="_blank" class="btn btn-primary">%s</a>',val,val)
+}
+
+createLinkENS  <- function(val, species="Mus_musculus") {
+  paste0('<a href="http://www.ensembl.org/',species,'/Gene/Summary?g=',val,'" target="_blank" class="btn btn-primary">',val,'</a>')
+}
+
+createLinkGeneSymbol <- function(val) {
+  # possibilities:
+  # ncbi
+  # genecards
+  paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=',val,'[sym]" target="_blank" class="btn btn-primary">',val,'</a>')
+}
+
+alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, species) {
+  
+  # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
+  id_contrast <- contrast
+  resuSet[[id_contrast]] <- list()
+  
+  # mycoef <- resultsNames(dds_obj)[2]
+  mycoef <- contrast
+  
+  message("Extracting results...")
+  resuSet[[id_contrast]][["res_DESeq"]] <- results(dds_obj,name = mycoef, alpha = FDR)
+  message("Performing LFC shrinkage...")
+  resuSet[[id_contrast]][["res_DESeq"]] <- lfcShrink(dds_obj,coef = mycoef,res = resuSet[[id_contrast]][["res_DESeq"]], type = "apeglm") 
+  resuSet[[id_contrast]][["res_DESeq"]]$SYMBOL <- anno_df$gene_name[match(rownames(resuSet[[id_contrast]][["res_DESeq"]]), anno_df$gene_id)]
+  
+  message("Summary MAplot...")
+  summary(resuSet[[id_contrast]][["res_DESeq"]])
+  resuSet[[id_contrast]][["maplot_res"]] <- 
+    ideal::plot_ma(resuSet[[id_contrast]][["res_DESeq"]], ylim = c(-2,2), title = id_contrast, FDR = FDR)
+  
+  message("Extracting tables...")
+  resuSet[[id_contrast]][["tbl_res_all"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]])
+  resuSet[[id_contrast]][["tbl_res_all"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_all"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anns$ensembl_gene_id)]
+  
+  message("Extracting DEtables...")
+  resuSet[[id_contrast]][["tbl_res_DE"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]],FDR = FDR)
+  resuSet[[id_contrast]][["tbl_res_DE"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$chromosome_name <- anns$chromosome_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
+  
+  if(nrow(resuSet[[id_contrast]][["tbl_res_DE"]]) > 0) {
+    message("Generating interactive DEtable...")
+    resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
+    resuSet[[id_contrast]][["etbl_res_DE"]]$id <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$id, species = species)
+    resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol)
+  }
+  
+  mybuttons <- c('copy', 'csv', 'excel', 'pdf', 'print')
+  datatable(resuSet[[id_contrast]][["etbl_res_DE"]],caption = paste0(id_contrast,", DE genes"),escape=F, extensions = 'Buttons', options = list(dom = 'Bfrtip',buttons = mybuttons))
+  
+  return(resuSet)
+}
+```
+
+```{r}
+# set FDR 
+FDR = 0.1
+```
+
+# ctrl
+
+## DE - Differential Expression - group_PTPRZ_KO_ctrl_vs_B6_ctrl
+
+```{r}
+dds_ctrl <- DESeq(dds_ctrl)
+```
+
+This is our main contrast
+
+```{r contrast}
+contrasts <- resultsNames(dds_ctrl)
+contrasts
+```
+
+```{r}
+myresuSet <- list()
+myresuSet <- alltheresults(
+  myresuSet, dds_ctrl,
+  contrast = c("group_PTPRZ_KO_ctrl_vs_B6_ctrl"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet$group_PTPRZ_KO_ctrl_vs_B6_ctrl$maplot_res
+DT::datatable(myresuSet$group_PTPRZ_KO_ctrl_vs_B6_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+
+```
+
+## Functional Enrichment Analysis - group_PTPRZ_KO_ctrl_vs_B6_ctrl
+
+Now we would like to determine which biological pathways are associated with these DEGs. This will help us understand the processes and functions these genes are involved in.
+
+```{r}
+expressedInAssay <- (rowSums(assay(dds_ctrl))>0)
+geneUniverseExprENS <- rownames(dds_ctrl[expressedInAssay])
+geneUniverseExpr <- anno_df$gene_name[match(geneUniverseExprENS, anno_df$gene_id)]
+```
+
+### Analysis with clusterProfiler
+
+```{r}
+if(nrow(myresuSet[["group_PTPRZ_KO_ctrl_vs_B6_ctrl"]][["tbl_res_DE"]]) > 0) {
+    myresuSet[["group_PTPRZ_KO_ctrl_vs_B6_ctrl"]][["clupro_tbl"]] <- 
+      enrichGO(
+        gene = myresuSet[["group_PTPRZ_KO_ctrl_vs_B6_ctrl"]][["tbl_res_DE"]]$geneSymbol,
+        universe      = geneUniverseExpr,
+        keyType       = "SYMBOL",
+        OrgDb         = org.Mm.eg.db,
+        ont           = "BP",
+        pAdjustMethod = "BH",
+        pvalueCutoff  = 0.2,
+        qvalueCutoff  = 0.4,
+        readable      = FALSE)
+  }
+```
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_ctrl_vs_B6_ctrl$clupro_tbl), rownames = FALSE)
+```
+### Analysis with topGO
+
+```{r cache=TRUE}
+if (nrow(myresuSet[["group_PTPRZ_KO_ctrl_vs_B6_ctrl"]][["tbl_res_DE"]]) > 0) {
+  myresuSet[["group_PTPRZ_KO_ctrl_vs_B6_ctrl"]][["topGO_tbl"]] <- 
+    topGOtable(DEgenes = myresuSet[["group_PTPRZ_KO_ctrl_vs_B6_ctrl"]][["tbl_res_DE"]]$geneSymbol, 
+               BGgenes = geneUniverseExpr, 
+               ontology = "BP",
+               geneID = "symbol",
+               addGeneToTerms = TRUE, 
+               topTablerows = 500,
+               mapping = "org.Mm.eg.db")
+  }
+```
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_ctrl_vs_B6_ctrl$topGO_tbl), rownames = FALSE)
+```
+
+
+```{r eval=FALSE}
+saveRDS(dds_ctrl,"dds_ctrl.RDS")
+```
+
+# LPNIFNy
+
+## DE - Differential Expression - group_PTPRZ_KO_ctrl_vs_B6_ctrl
+
+```{r}
+dds_LPSIFNy <- DESeq(dds_LPSIFNy)
+```
+
+This is our main contrast
+
+```{r}
+contrasts <- resultsNames(dds_LPSIFNy)
+contrasts
+```
+
+```{r}
+myresuSet <- alltheresults(
+  myresuSet, dds_LPSIFNy,
+  contrast = c("group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$maplot_res
+DT::datatable(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$etbl_res_DE, escape = FALSE, rownames = FALSE)
+
+```
+
+## Functional Enrichment Analysis - group_PTPRZ_KO_ctrl_vs_B6_ctrl
+
+Now we would like to determine which biological pathways are associated with these DEGs. This will help us understand the processes and functions these genes are involved in.
+
+```{r}
+expressedInAssay <- (rowSums(assay(dds_LPSIFNy))>0)
+geneUniverseExprENS <- rownames(dds_LPSIFNy)[expressedInAssay]
+geneUniverseExpr <- anno_df$gene_name[match(geneUniverseExprENS, anno_df$gene_id)]
+```
+
+### Analysis with clusterProfiler
+
+```{r}
+if(nrow(myresuSet[["group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy"]][["tbl_res_DE"]]) > 0) {
+    myresuSet[["group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy"]][["clupro_tbl"]] <- 
+      enrichGO(
+        gene = myresuSet[["group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy"]][["tbl_res_DE"]]$geneSymbol,
+        universe      = geneUniverseExpr,
+        keyType       = "SYMBOL",
+        OrgDb         = org.Mm.eg.db,
+        ont           = "BP",
+        pAdjustMethod = "BH",
+        pvalueCutoff  = 0.2,
+        qvalueCutoff  = 0.4,
+        readable      = FALSE)
+  }
+```
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$clupro_tbl), rownames = FALSE)
+```
+
+### Analysis with topGO
+
+```{r cache=TRUE}
+if (nrow(myresuSet[["group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy"]][["tbl_res_DE"]]) > 0) {
+  myresuSet[["group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy"]][["topGO_tbl"]] <- 
+    topGOtable(DEgenes = myresuSet[["group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy"]][["tbl_res_DE"]]$geneSymbol, 
+               BGgenes = geneUniverseExpr, 
+               ontology = "BP",
+               geneID = "symbol",
+               addGeneToTerms = TRUE, 
+               topTablerows = 500,
+               mapping = "org.Mm.eg.db")
+  }
+```
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$topGO_tbl), rownames = FALSE)
+```
+
+```{r eval=FALSE}
+saveRDS(dds_LPSIFNy,"dds_LPSIFNy.RDS")
+```
+
+# IL4
+
+## DE - Differential Expression - group_PTPRZ_KO_IL4_vs_B6_IL4
+
+```{r}
+dds_IL4 <- DESeq(dds_IL4)
+```
+
+This is our main contrast
+
+```{r}
+contrasts <- resultsNames(dds_IL4)
+contrasts
+```
+
+```{r}
+myresuSet <- alltheresults(
+  myresuSet, dds_IL4,
+  contrast = c("group_PTPRZ_KO_IL4_vs_B6_IL4"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet$group_PTPRZ_KO_IL4_vs_B6_IL4$maplot_res
+DT::datatable(myresuSet$group_PTPRZ_KO_IL4_vs_B6_IL4$etbl_res_DE, escape = FALSE, rownames = FALSE)
+
+```
+## Functional Enrichment Analysis - group_PTPRZ_KO_IL4_vs_B6_IL4
+
+Now we would like to determine which biological pathways are associated with these DEGs. This will help us understand the processes and functions these genes are involved in.
+
+```{r}
+expressedInAssay <- (rowSums(assay(dds_IL4))>0)
+geneUniverseExprENS <- rownames(dds_IL4)[expressedInAssay]
+geneUniverseExpr <- anno_df$gene_name[match(geneUniverseExprENS, anno_df$gene_id)]
+```
+
+### Analysis with clusterProfiler
+
+```{r}
+if(nrow(myresuSet[["group_PTPRZ_KO_IL4_vs_B6_IL4"]][["tbl_res_DE"]]) > 0) {
+    myresuSet[["group_PTPRZ_KO_IL4_vs_B6_IL4"]][["clupro_tbl"]] <- 
+      enrichGO(
+        gene = myresuSet[["group_PTPRZ_KO_IL4_vs_B6_IL4"]][["tbl_res_DE"]]$geneSymbol,
+        universe      = geneUniverseExpr,
+        keyType       = "SYMBOL",
+        OrgDb         = org.Mm.eg.db,
+        ont           = "BP",
+        pAdjustMethod = "BH",
+        pvalueCutoff  = 0.2,
+        qvalueCutoff  = 0.4,
+        readable      = FALSE)
+  }
+```
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_IL4_vs_B6_IL4$clupro_tbl), rownames = FALSE)
+```
+
+### Analysis with topGO
+
+```{r cache=TRUE}
+if (nrow(myresuSet[["group_PTPRZ_KO_IL4_vs_B6_IL4"]][["tbl_res_DE"]]) > 0) {
+  myresuSet[["group_PTPRZ_KO_IL4_vs_B6_IL4"]][["topGO_tbl"]] <- 
+    topGOtable(DEgenes = myresuSet[["group_PTPRZ_KO_IL4_vs_B6_IL4"]][["tbl_res_DE"]]$geneSymbol, 
+               BGgenes = geneUniverseExpr, 
+               ontology = "BP",
+               geneID = "symbol",
+               addGeneToTerms = TRUE, 
+               topTablerows = 500,
+               mapping = "org.Mm.eg.db")
+  }
+```
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_IL4_vs_B6_IL4$topGO_tbl), rownames = FALSE)
+```
+```{r eval=FALSE}
+saveRDS(dds_IL4,"dds_IL4.RDS")
+```
+
+# Interactive Exploration with `GeneTonic`
+
+This data can be further explored interactively with `r BiocStyle::Biocpkg("GeneTonic")`. For this, we need to create a `GeneTonicList`
+
+```{r echo=FALSE, eval=TRUE}
+# function to easily generate GeneTonicLists for different contrasts
+
+resuset_to_gtl <- function(myresuSet, result_name, dds, anno_df, enrich_algo) {
+  dds_gtl <- dds
+  anno_df_gtl <- anno_df
+  res_de_gtl <- myresuSet[[result_name]][["res_DESeq"]]
+  
+  if (enrich_algo == "topGO_tbl") {
+    res_enrich_gtl <- GeneTonic::shake_topGOtableResult(myresuSet[[result_name]][["topGO_tbl"]])
+  } else if (enrich_algo == "clupro_tbl") {
+    res_enrich_gtl <- GeneTonic::shake_enrichResult(myresuSet[[result_name]][["clupro_tbl"]])
+  }
+  
+  
+  gtl_assembled <- GeneTonicList(
+    dds = dds_gtl,
+    res_de = res_de_gtl,
+    res_enrich = res_enrich_gtl,
+    annotation_obj = anno_df_gtl
+  )
+  
+  return(gtl_assembled)
+}
+```
+
+```{r}
+# you can always change the enrichment results (topGO_tbl or clupro_tbl)
+gtl_KOM0_vs_WTM0 <- resuset_to_gtl(myresuSet, "group_PTPRZ_KO_ctrl_vs_B6_ctrl", dds_ctrl, anno_df, enrich_algo = "clupro_tbl")
+gtl_KOM1_vs_WTM1 <- resuset_to_gtl(myresuSet, "group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy", dds_LPSIFNy, anno_df, enrich_algo = "clupro_tbl")
+gtl_KOM2_vs_WTM2 <- resuset_to_gtl(myresuSet, "group_PTPRZ_KO_IL4_vs_B6_IL4", dds_IL4, anno_df, enrich_algo = "clupro_tbl")
+
+```
+
+Now  we can use `GeneTonic` to explore the data by simply typing …
+
+```{r eval=FALSE}
+GeneTonic(gtl = gtl_KOM0_vs_WTM0)
+```
+
+# Visualization ...
+
+## Figure 7G
+
+### Heatmap for M1 
+
+```{r}
+###########
+# Figure 7G
+###########
+# M0 = ctrl , M2 = IL-4 , M1 = IFNg+LPS
+###########
+
+# use the normalized counts
+vst_M0 <- vst(dds_ctrl)
+vst_M1 <- vst(dds_LPSIFNy)
+vst_M2 <- vst(dds_IL4)
+
+gene_signature <- c("Nos1", "Yap1", "Sod1", "Sod2", "Sod3",
+                    "Casp3", "Parp1", "Rock1", "Bcl2", "Bad",
+                    "Lcn2", "Ddr2", "Met")
+
+# create matrix for heatmap for M1
+matched_id <- rowData(vst_M1)$SYMBOL %in% gene_signature 
+heatmap_data <- assay(vst_M1)[matched_id, ]
+rownames(heatmap_data) <- rowData(vst_M1)$SYMBOL[matched_id]
+
+# create annot_col
+df <- data.frame("genotype" = vst_M1$genotype)
+rownames(df) <- vst_M1$id
+
+pheatmap::pheatmap(
+  heatmap_data - rowMeans(heatmap_data),
+  annotation = df,
+  cluster_cols = F,
+  show_colnames = F,
+  scale = "row"
+)
+
+####
+# # let's use genetonic to create a heatmap
+# vst_M1 <- vst(dds_LPSIFNy)
+# de_M1 <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$res_DESeq
+# enrich_M1 <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$topGO_tbl
+# enrich_M1 <- shake_topGOtableResult(enrich_M1)
+# res_enrich <- get_aggrscores(enrich_M1, de_M1, anno_df)
+# 
+# # get the ensembl ids
+# row_symbols <- rowData(vst_M1)$SYMBOL
+# matching_ids <- rownames(vst_M1)[row_symbols %in% gene_signature]
+
+# GeneTonic::gs_heatmap(se = vst_M1,
+#                       res_de = de_M1,
+#                       res_enrich = enrich_M1,
+#                       annotation_obj = anno_df,
+#                       scale_row = T,
+#                       anno_col_info = "genotype",
+#                       genelist = matching_ids) # it returns the expression value and not a z score
+
+```
+
+### Heatmap for M2
+
+```{r}
+# create matrix for heatmap for M2
+# Nos1 is not expressed in M2
+
+matched_id <- rowData(vst_M2)$SYMBOL %in% gene_signature 
+heatmap_data <- assay(vst_M2)[matched_id, ]
+rownames(heatmap_data) <- rowData(vst_M2)$SYMBOL[matched_id]
+
+# create annot_col
+df <- data.frame("genotype" = vst_M2$genotype)
+rownames(df) <- vst_M2$id
+
+
+m2_mat <- heatmap_data - rowMeans(heatmap_data)
+m2_mat <- m2_mat/rowSds(m2_mat)
+m2_mat["Nos1", ] <- c(0, 0, 0, 0)
+
+pheatmap::pheatmap(
+  m2_mat,
+  annotation = df,
+  cluster_cols = F,
+  show_colnames = F
+  # scale = "row"
+)
+
+```
+
+### Heatmap for M0
+
+```{r}
+# create matrix for heatmap for M0
+matched_id <- rowData(vst_M0)$SYMBOL %in% gene_signature 
+heatmap_data <- assay(vst_M0)[matched_id, ]
+rownames(heatmap_data) <- rowData(vst_M0)$SYMBOL[matched_id]
+
+# create annot_col
+df <- data.frame("genotype" = vst_M0$genotype)
+rownames(df) <- vst_M0$id
+
+pheatmap::pheatmap(
+  heatmap_data - rowMeans(heatmap_data),
+  annotation = df,
+  cluster_cols = F,
+  scale = "row",
+  show_colnames = F
+)
+```
+
+
+## Figure 11D - supplement
+
+### Heatmap for M1
+
+```{r}
+##########################
+# Figure 11D - supplement
+##########################
+
+# heatmap for M1
+vst_M1 <- vst(dds_LPSIFNy)
+de_M1 <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$res_DESeq
+enrich_M1 <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_B6_LPSIFNy$clupro_tbl
+enrich_M1 <- shake_enrichResult(enrich_M1)
+# subset for the genesets of interest
+go_terms <- c(
+  "anterior/posterior axis specification|GO:0009948",
+  "negative regulation of stress fiber assembly|GO:0051497",
+  "collagen-activated tyrosine kinase receptor signaling pathway|GO:0038063",
+  "cellular response to reactive oxygen species|GO:0034614",
+  "regulation of hydrogen peroxide-mediated programmed cell death|GO:1901298"
+)
+
+scores_mat_M1 <- gs_scores(
+  se = vst_M1,
+  res_de = de_M1,
+  res_enrich = enrich_M1,
+  annotation_obj = anno_df
+)
+
+#subset for terms of interest
+scores_mat_subset_M1 <- scores_mat_M1[rownames(scores_mat_M1) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_M1,
+              gs_ids = go_terms,
+              n_gs = 10)
+
+```
+
+### Heatmap for M2
+
+```{r}
+# heatmap for M2
+vst_M2 <- vst(dds_IL4)
+de_M2 <- myresuSet$group_PTPRZ_KO_IL4_vs_B6_IL4$res_DESeq
+enrich_M2 <- myresuSet$group_PTPRZ_KO_IL4_vs_B6_IL4$clupro_tbl
+enrich_M2 <- shake_enrichResult(enrich_M2)
+
+scores_mat_M2 <- gs_scores(
+  se = vst_M2,
+  res_de = de_M2,
+  res_enrich = enrich_M2,
+  annotation_obj = anno_df
+)
+
+#subset for terms of interest
+scores_mat_subset_M2 <- scores_mat_M2[rownames(scores_mat_M2) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_M2,
+              gs_ids = go_terms,
+              n_gs = 10)
+
+```
+
+### Heatmap for M0
+
+```{r}
+# heatmap for M0
+vst_M0 <- vst(dds_ctrl)
+de_M0 <- myresuSet$group_PTPRZ_KO_ctrl_vs_B6_ctrl$res_DESeq
+enrich_M0 <- myresuSet$group_PTPRZ_KO_ctrl_vs_B6_ctrl$clupro_tbl
+enrich_M0 <- shake_enrichResult(enrich_M0)
+
+scores_mat_M0 <- gs_scores(
+  se = vst_M0,
+  res_de = de_M0,
+  res_enrich = enrich_M0,
+  annotation_obj = anno_df
+)
+
+#subset for terms of interest
+scores_mat_subset_M0 <- scores_mat_M0[rownames(scores_mat_M0) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_M0,
+              gs_ids = go_terms,
+              n_gs = 10)
+
+```
+
+## Figure 11E - supplement
+
+### Heatmap for M1
+
+```{r}
+##########################
+# Figure 11E - supplement
+##########################
+
+go_terms <- c("negative regulation of cytoskeleton organization|GO:0051494",
+"regulation of microtubule cytoskeleton organization|GO:0070507",
+"formation of translation preinitiation complex|GO:0001731")
+
+# heatmap for M1
+#subset for terms of interest
+scores_mat_subset_1_1 <- scores_mat_M1[rownames(scores_mat_M1) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_1_1,
+              gs_ids = go_terms,
+              n_gs = 10)
+
+```
+
+### Heatmap for M2
+
+```{r}
+# heatmap for M2
+#subset for terms of interest
+scores_mat_subset_2_2 <- scores_mat_M2[rownames(scores_mat_M2) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_2_2,
+              gs_ids = go_terms,
+              n_gs = 10)
+```
+
+### Heatmap for M0
+
+```{r}
+# heatmap for M0
+#subset for terms of interest
+scores_mat_subset_0_0 <- scores_mat_M0[rownames(scores_mat_M0) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_0_0,
+              gs_ids = go_terms,
+              n_gs = 10)
+```
+
+
+# Session information {-}
+
+```{r sessioninfo}
+BIUMmisc::sessioninfo_extra()
+```

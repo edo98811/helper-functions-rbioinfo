@@ -1,0 +1,1297 @@
+---
+title: >
+  Exploratory Data Analysis 
+author: >
+  In vitro stimulation of Tubular Epithelial Cells Analysis </br>
+  Najla Abassi and Federico Marini </br>
+  University Medical Center - Mainz (Germany)
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+    code_folding: show
+    number_sections: true
+    theme: cosmo
+date: "`r BiocStyle::doc_date()`" 
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r echo = F}
+options(error = function(){    # scream on error
+  beepr::beep(9)
+  Sys.sleep(1)
+  }
+)
+
+.Last <- function() {          # Beep when knitting ends
+  beepr::beep(8)
+  Sys.sleep(7)
+}
+
+```
+
+```{r setup, include=FALSE, cache=FALSE, eval = TRUE, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  fig.path = paste0('./_figures_TEC_stim/'),
+  fig.align = 'center',
+  fig.show = 'asis',
+  eval = TRUE,
+  fig.width = 10,
+  fig.height = 7,
+  tidy = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  size = 'small',
+  comment = "##",
+  echo = TRUE,
+  results = 'markup',
+  dev = c("png", "pdf")
+)
+options(replace.assign = TRUE,
+        width = 80)
+```
+
+```{r loadLibraries,results='hide'}
+library("SummarizedExperiment")
+library("ggplot2")
+library("limma")
+library("pcaExplorer")
+library("DESeq2")
+library("GeneTonic")
+library("DT")
+library("org.Mm.eg.db")
+library("biomaRt")
+library("clusterProfiler")
+library("topGO")
+library("plotly")
+```
+
+# Importing quantification files into R
+
+We start by loading the `gse.RDS` object that we created containing the counts for all 32 samples.
+
+```{r load-data}
+gse <- readRDS("gse.RDS")
+
+gse
+```
+
+```{r load-metadata}
+# load metadata
+coldata_all <- readxl::read_xlsx("sample_sheet_PTPRZ1_analysis.xlsx", col_names = T)
+
+head(coldata_all)
+```
+
+# EDA - Exploratory Data Analysis : Role of PTPRZ1 in Acute Kidney Injury/ Chronic Kidney Disease
+
+In vitro stimulation of cell culture (renal tubular epithelial cells TEC) was performed with LPS + IFNy.
+
+We would like to know if PTPRZ1 promotes IC recruitment/activation and profibrotic signaling in murine TEC. For this we will subset only the PTPRZ1 Het and PTPRZ1 KO that were included in this experiment
+
+```{r subset}
+gse1 <- gse[, 13:32]
+
+gse1
+
+colnames(gse1)
+```
+
+Let's take a look at the experiment details:
+
+```{r summary}
+table(gse1$id) # how many samples
+table(gse1$genotype) # how many sample per genotype
+table(gse1$condition) # how many patients condition
+table(gse1$group) # how many sample per group
+table(gse1$sample_id) # how many sample
+table(gse1$donor_animal) # how many sample per animal
+```
+
+We want to find the changes in gene expression that can be associated with knocking out PTPRZ1.
+
+```{r set-factor}
+colData(gse1)$id <- factor(colData(gse1)$id)
+colData(gse1)$genotype <- factor(colData(gse1)$genotype)
+colData(gse1)$condition <- factor(colData(gse1)$condition)
+colData(gse1)$group <- factor(colData(gse1)$group)
+colData(gse1)$sample_id <- factor(colData(gse1)$sample_id) 
+colData(gse1)$donor_animal <- factor(colData(gse1)$donor_animal) 
+```
+
+Now let's create the `DESeqDataSet` object using the `RangedSummarizedExperiment` :
+
+```{r dds}
+dds <- DESeqDataSet(gse1, design = ~group)
+dds
+```
+
+```{r set-levels}
+lapply(colData(dds), levels)
+```
+
+```{r check-levels}
+dds$id
+dds$genotype
+dds$condition
+dds$group
+dds$sample_id
+dds$donor_animal
+```
+
+Let's how many genes have non-zero counts across all samples.
+
+```{r unexp-genes}
+nrow(dds) # total number of genes
+table(rowSums(assay(dds, "counts")) == 0)
+```
+
+Let's check the number of assigned reads per sample as a proxy of the sequencing depth
+
+```{r plot-seq-depth}
+myd <- data.frame(
+  counts = colSums(counts(dds)),
+  sample = colnames(dds))
+ggplot(myd, aes(x = sample,weight = counts, fill = sample)) + geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + theme_bw() + coord_flip()
+```
+
+# PCA plots
+
+```{r pca}
+vst <- vst(dds)
+
+pcaplot(vst, intgroup = "id", ellipse = FALSE, text_labels = FALSE, ntop = 5000)
+pcaplot(vst, intgroup = "genotype", ellipse = FALSE, text_labels = FALSE, ntop = 5000)
+pcaplot(vst, intgroup = "condition", ellipse = FALSE, text_labels = FALSE, ntop = 5000)
+pcaplot(vst, intgroup = "group", ellipse = FALSE, text_labels = FALSE, ntop = 5000)
+pcaplot(vst, intgroup = "sample_id", ellipse = FALSE, text_labels = FALSE, ntop = 5000)
+pcaplot(vst, intgroup = "donor_animal", ellipse = FALSE, text_labels = FALSE, ntop = 5000)
+
+```
+
+The main driver of variability seems to be the `condition` , which means whether cells are stimulated or not
+
+# Gene Annotation
+
+```{r}
+# creating an annotation df
+# we need to perform some transformation to the ENSEMBL ids
+head(rownames(rowData(dds)))
+rowdata <- as.data.frame(rowData(dds))
+row_names <- rownames(rowdata)
+modified_row_names <- gsub("\\.[0-9]*$", "", row_names)
+rownames(dds) <- modified_row_names
+head(rownames(rowData(dds)))
+
+anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Mm.eg.db", "ENSEMBL")
+
+```
+
+```{r}
+library("biomaRt")
+mart <- useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl")
+
+anns <- getBM(attributes = c("ensembl_gene_id", "external_gene_name", "description"), 
+              filters = "ensembl_gene_id",
+              values = rownames(dds), 
+              mart = mart)
+
+anns <- anns[match(rownames(dds), anns$ensembl_gene_id), ]
+# then this will be used to create the GeneTonicList later
+```
+
+
+# DE - Differential Expression, preliminary results
+
+```{r}
+# this is a collection of functions to make the results nicer
+createLinkGO <- function(val) {
+  sprintf('<a href="http://amigo.geneontology.org/amigo/term/%s" target="_blank" class="btn btn-primary">%s</a>',val,val)
+}
+
+createLinkENS  <- function(val, species="Mus_musculus") {
+  paste0('<a href="http://www.ensembl.org/',species,'/Gene/Summary?g=',val,'" target="_blank" class="btn btn-primary">',val,'</a>')
+}
+
+createLinkGeneSymbol <- function(val) {
+  # possibilities:
+  # ncbi
+  # genecards
+  paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=',val,'[sym]" target="_blank" class="btn btn-primary">',val,'</a>')
+}
+
+alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, species) {
+  
+  # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
+  id_contrast <- contrast
+  resuSet[[id_contrast]] <- list()
+  
+  # mycoef <- resultsNames(dds_obj)[2]
+  mycoef <- contrast
+  
+  message("Extracting results...")
+  resuSet[[id_contrast]][["res_DESeq"]] <- results(dds_obj,name = mycoef, alpha = FDR)
+  # message("Performing LFC shrinkage...")
+  resuSet[[id_contrast]][["res_DESeq"]] <- lfcShrink(dds_obj,coef = mycoef,res = resuSet[[id_contrast]][["res_DESeq"]], type = "apeglm") 
+  resuSet[[id_contrast]][["res_DESeq"]]$SYMBOL <- anno_df$gene_name[match(rownames(resuSet[[id_contrast]][["res_DESeq"]]), anno_df$gene_id)]
+  
+  message("Summary MAplot...")
+  summary(resuSet[[id_contrast]][["res_DESeq"]])
+  resuSet[[id_contrast]][["maplot_res"]] <- 
+    ideal::plot_ma(resuSet[[id_contrast]][["res_DESeq"]], ylim = c(-2,2), title = id_contrast, FDR = FDR)
+  
+  message("Extracting tables...")
+  resuSet[[id_contrast]][["tbl_res_all"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]])
+  resuSet[[id_contrast]][["tbl_res_all"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_all"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anns$ensembl_gene_id)]
+  
+  message("Extracting DEtables...")
+  resuSet[[id_contrast]][["tbl_res_DE"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]],FDR = FDR)
+  resuSet[[id_contrast]][["tbl_res_DE"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$chromosome_name <- anns$chromosome_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
+  
+  if(nrow(resuSet[[id_contrast]][["tbl_res_DE"]]) > 0) {
+    message("Generating interactive DEtable...")
+    resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
+    resuSet[[id_contrast]][["etbl_res_DE"]]$id <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$id, species = species)
+    resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol)
+  }
+  
+  mybuttons <- c('copy', 'csv', 'excel', 'pdf', 'print')
+  datatable(resuSet[[id_contrast]][["etbl_res_DE"]],caption = paste0(id_contrast,", DE genes"),escape=F, extensions = 'Buttons', options = list(dom = 'Bfrtip',buttons = mybuttons))
+  
+  return(resuSet)
+}
+```
+
+In this part we will compare the differences in gene expression within the `genotype`, while also accounting for the condition
+
+```{r runde}
+dds <- DESeq(dds)
+```
+
+These are our main contrasts
+
+```{r contrast}
+contrasts <- resultsNames(dds)
+contrasts
+```
+
+```{r}
+# set FDR 
+FDR = 0.05
+```
+
+## DE - PTPRZ1 KO-ctr vs PTPRZ1 Het-ctrl
+
+This would be PTPRZ1 KO-ctrl vs PTPRZ1 Het-ctrl (in other words here we are comparing KO vs WT when the cells are not stimulated)
+
+```{r}
+myresuSet <- list()
+myresuSet <- alltheresults(
+  myresuSet, dds,
+  contrast = c("group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl$maplot_res
+DT::datatable(myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# DE - PTPRZ1 KO-stim vs PTPRZ1 Het-ctrl
+# This would be PTPRZ1 KO-stim vs PTPRZ1 Het-ctrl
+# myresuSet <- alltheresults(
+#   myresuSet, dds,
+#   contrast = c("group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_ctrl"), FDR = FDR,
+#   anno_df = anno_df, anns = anns, species = "Mus_musculus")
+# myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_ctrl$maplot_res
+# DT::datatable(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+Now let's change the reference level
+
+```{r relevel}
+dds_releveled <- dds
+dds_releveled$group <- relevel(dds_releveled$group, "PTPRZ_het_LPSIFNy")
+dds_releveled <- nbinomWaldTest(dds_releveled)
+resultsNames(dds_releveled)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# DE - PTPRZ1 KO-ctrl vs PTPRZ 1 Het-stim
+# This would be PTPRZ1 KO-ctrl vs PTPRZ 1 Het-stim
+# myresuSet <- alltheresults(
+#   myresuSet, dds_releveled,
+#   contrast = c("group_PTPRZ_KO_ctrl_vs_PTPRZ_het_LPSIFNy"), FDR = FDR,
+#   anno_df = anno_df, anns = anns, species = "Mus_musculus")
+# myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_LPSIFNy$maplot_res
+# DT::datatable(myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_LPSIFNy$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+
+## DE - PTPRZ1 KO-stim vs PTPRZ 1 Het-stim
+
+This would be PTPRZ1 KO-stim vs PTPRZ 1 Het-stim
+
+```{r}
+myresuSet <- alltheresults(
+  myresuSet, dds_releveled,
+  contrast = c("group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy$maplot_res
+DT::datatable(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+Now we would like to explore the differences due to the `condition`, while also accounting for the donor. The simplest approach is to subset by `genotype`, and then compare within each `genotype` the effect of the stimulation
+
+```{r dds1}
+# dds PTPRZ_het
+dds_het <- dds[,dds$genotype == "PTPRZ_het"]
+# drop the levels that are not in the PTPRZ_het group
+dds_het$donor_animal <- droplevels(dds_het$donor_animal) 
+dds_het$group <- droplevels(dds_het$group)
+
+# dds PTPRZ_KO
+dds_ko <- dds[,dds$genotype == "PTPRZ_KO"]
+dds_ko$donor_animal <- droplevels(dds_ko$donor_animal)
+dds_ko$group <- droplevels(dds_ko$group)
+```
+
+```{r recheck-levels}
+dds_het$group
+dds_het$donor_animal
+dds_ko$group
+dds_ko$donor_animal
+```
+Now we have to change the design to compare the effect of the stimulation. In other words, we will compare ctrl vs LPSIFNy:
+
+```{r}
+# design for WT group
+design(dds_het) <- ~donor_animal + group
+# design for KO group
+design(dds_ko) <- ~donor_animal + group
+```
+
+```{r , echo=FALSE, eval=FALSE}
+# dds_het_0 <- dds_het
+# design(dds_het_0) <- ~group
+# 
+# dds_ko_0 <- dds_ko
+# design(dds_ko_0) <- ~group
+# 
+# dds_het <- DESeq(dds_het)
+# dds_het_0 <- DESeq(dds_het_0)
+# 
+# dds_ko <- DESeq(dds_ko)
+# dds_ko_0 <- DESeq(dds_ko_0)
+# 
+# summary(results(dds_het), alpha = 0.05)
+# summary(results(dds_het_0), alpha = 0.05)
+# summary(results(dds_ko), alpha = 0.05)
+# summary(results(dds_ko_0), alpha = 0.05)
+```
+
+## DE - PTPRZ1 Het-stim vs PTPRZ Het-ctrl
+
+This would be PTPRZ1 Het-stim vs PTPRZ Het-ctrl
+
+```{r runde1}
+dds_het <- DESeq(dds_het)
+```
+
+These are our main contrasts
+
+```{r}
+contrasts <- resultsNames(dds_het)
+contrasts
+```
+
+```{r}
+myresuSet <- alltheresults(
+  myresuSet, dds_het,
+  contrast = c("group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$maplot_res
+DT::datatable(myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+## DE - PTPRZ1 KO-stim vs PTPRZ KO-ctrl
+
+This would be PTPRZ1 KO-stim vs PTPRZ KO-ctrl
+
+```{r runde2}
+dds_ko <- DESeq(dds_ko)
+```
+
+These are our main contrasts
+
+```{r}
+contrasts <- resultsNames(dds_ko)
+contrasts
+```
+
+```{r}
+myresuSet <- alltheresults(
+  myresuSet, dds_ko,
+  contrast = c("group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$maplot_res
+DT::datatable(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+```{r}
+de_het <- myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$tbl_res_DE
+de_het$genotype <- "PTPRZ_het"
+de_ko <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$tbl_res_DE
+de_ko$genotype <- "PTPRZ_KO"
+
+de <- rbind(de_het, de_ko)
+
+# add a column of NAs
+de$diffexpressed <- "NA"
+# if log2Foldchange > 0 and pvalue < 0.05, set as "UP" 
+de$diffexpressed[de$log2FoldChange > 0 & de$pvalue < 0.05] <- "UP"
+# if log2Foldchange < 0 and pvalue < 0.05, set as "DOWN"
+de$diffexpressed[de$log2FoldChange < 0 & de$pvalue < 0.05] <- "DOWN"
+
+# add hover text
+de$SYMBOL_genotype <- paste(de$SYMBOL,de$genotype,sep = "_")
+
+# volcano plot of the stim vs unstim comparison
+# when you hover the mouse you'll see 1 gene in the KO group and Het group
+de %>%
+  highlight_key(~id) %>%
+  plotly::plot_ly(
+    x = ~ log2FoldChange,
+    y = ~ -log10(pvalue),
+    type = "scatter",
+    color = ~ diffexpressed,
+    symbol = ~ genotype,
+    symbols = c("circle", "square"),
+    colors = c("#eb3642", "#3c5ade"),
+    hoverinfo = "text",
+    hovertext = ~ SYMBOL_genotype
+  )  %>%
+  plotly::highlight(on = "plotly_hover", off = "plotly_doubleclick") 
+
+```
+
+
+```{r}
+res_het <- as.data.frame(myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$res_DESeq)
+res_het$genotype <- "PTPRZ_het"
+res_het$SYMBOL_genotype <- paste(res_het$SYMBOL,res_het$genotype,sep = "_")
+res_het$id <- rownames(res_het)
+
+res_ko <- as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$res_DESeq)
+res_ko$genotype <- "PTPRZ_KO"
+res_ko$SYMBOL_genotype <- paste(res_ko$SYMBOL,res_ko$genotype,sep = "_")
+res_ko$id <- rownames(res_ko)
+
+res_total <- merge(
+  res_het[,c("log2FoldChange","pvalue","padj","SYMBOL","genotype","SYMBOL_genotype","id")],
+  res_ko[,c("log2FoldChange","pvalue","padj","genotype","SYMBOL_genotype","id")],
+  by= "id",
+  all=TRUE,
+  suffixes = c("_het", "_ko")
+)
+
+# # add a column of NAs
+# res_total$diffexpressed <- "NA"
+# # if both log2Foldchange > 0 and pvalue < 0.05, set as "HET_UP-KO_UP" 
+# res_total$diffexpressed[res_total$log2FoldChange_het > 0 & res_total$log2FoldChange_ko > 0 & res_total$pvalue_het < 0.05 & res_total$pvalue_ko < 0.05] <- "HET_UP-KO_UP"
+# # if both log2Foldchange < 0 and pvalue < 0.05, set as "HET_DOWN-KO_DOWN"
+# res_total$diffexpressed[res_total$log2FoldChange_het > 0 & res_total$log2FoldChange_ko > 0 & res_total$pvalue_het < 0.05 & res_total$pvalue_ko < 0.05] <- "HET_DOWN-KO_DOWN"
+# # if log2FoldChange_het > 0 and log2FoldChange_ko < 0 and pvalue < 0.05, set as "HET_UP-KO_DOWN"
+# res_total$diffexpressed[res_total$log2FoldChange_het > 0 & res_total$log2FoldChange_ko < 0 & res_total$pvalue_het < 0.05 & res_total$pvalue_ko < 0.05] <- "HET_UP-KO_DOWN"
+# # if log2FoldChange_het < 0 and log2FoldChange_ko > 0 and pvalue < 0.05, set as "KO_UP-HET_DOWN"
+# res_total$diffexpressed[res_total$log2FoldChange_het < 0 & res_total$log2FoldChange_ko > 0 & res_total$pvalue_het < 0.05 & res_total$pvalue_ko < 0.05] <- "KO_UP-HET_DOWN"
+# 
+# ## should we drop NA?
+# # res_total <- tidyr::drop_na(res_total)
+# # NA are plotted as white?
+# 
+# 
+# plotly::plot_ly(
+#   res_total,
+#     x = ~ log2FoldChange_het,
+#     y = ~ log2FoldChange_ko,
+#     type = "scatter",
+#     color = ~ diffexpressed,
+#     colors = c("#eb3642", "#3c5ade" , "#4dcdd6", "#3be395"),
+#     hoverinfo = "text",
+#   hovertext = ~ SYMBOL
+#   )
+
+
+```
+
+```{r}
+# add a column of NAs
+res_total$diffexpressed <- "NA"
+# if both log2Foldchange > 0, set as "HET_UP-KO_UP" 
+res_total$diffexpressed[res_total$log2FoldChange_het > 0 & res_total$log2FoldChange_ko > 0] <- "HET_UP-KO_UP"
+# if both log2Foldchange < 0, set as "HET_DOWN-KO_DOWN"
+res_total$diffexpressed[res_total$log2FoldChange_het < 0 & res_total$log2FoldChange_ko < 0] <- "HET_DOWN-KO_DOWN"
+# if log2FoldChange_het > 0 and log2FoldChange_ko < 0, set as "HET_UP-KO_DOWN"
+res_total$diffexpressed[res_total$log2FoldChange_het > 0 & res_total$log2FoldChange_ko < 0] <- "HET_UP-KO_DOWN"
+# if log2FoldChange_het < 0 and log2FoldChange_ko > 0, set as "KO_UP-HET_DOWN"
+res_total$diffexpressed[res_total$log2FoldChange_het < 0 & res_total$log2FoldChange_ko > 0] <- "KO_UP-HET_DOWN"
+
+plotly::plot_ly(
+  res_total,
+    x = ~ log2FoldChange_het,
+    y = ~ log2FoldChange_ko,
+    type = "scatter",
+    color = ~ diffexpressed,
+    colors = c("#eb3642", "#3c5ade" , "#4dcdd6", "#3be395"),
+    hoverinfo = "text",
+  hovertext = ~ SYMBOL
+  )
+```
+
+```{r, eval=FALSE}
+# save "DE" tables in an excel sheet
+library("openxlsx")
+library("stringr")
+
+# Create a new workbook
+wb <- createWorkbook()
+
+# Iterate over each element in the `myresuSet` and add a new sheet
+for (contrast in names(myresuSet)) {
+  truncked_name <- str_remove_all(contrast,"group_|PTPRZ_")
+  addWorksheet(wb, sheetName = truncked_name)
+  writeData(wb, sheet = truncked_name, x = myresuSet[[contrast]]$tbl_res_DE)
+}
+
+saveWorkbook(wb, "DE_gene_list.xlsx", overwrite = TRUE)
+```
+
+# Functional Enrichment Analysis
+
+Now we would like to determine which biological pathways are associated with these DEGs. This will help us understand the processes and functions these genes are involved in.
+
+```{r}
+expressedInAssay <- (rowSums(assay(dds))>0)
+geneUniverseExprENS <- rownames(dds)[expressedInAssay]
+geneUniverseExpr <- anno_df$gene_name[match(geneUniverseExprENS, anno_df$gene_id)]
+```
+
+## Analysis with clusterProfiler
+
+```{r}
+# enrichment with clusterProfiler
+
+for(i in names(myresuSet)) {
+  message(i)
+  if(nrow(myresuSet[[i]][["tbl_res_DE"]]) > 0) {
+    myresuSet[[i]][["clupro_tbl"]] <- 
+      enrichGO(
+        gene = myresuSet[[i]][["tbl_res_DE"]]$geneSymbol,
+        universe      = geneUniverseExpr,
+        keyType       = "SYMBOL",
+        OrgDb         = org.Mm.eg.db,
+        ont           = "BP",
+        pAdjustMethod = "BH",
+        pvalueCutoff  = 0.01,
+        qvalueCutoff  = 0.02,
+        readable      = FALSE)
+  }
+}
+```
+
+
+### Enrichment results for PTPRZ KO-ctrl vs PTPRZ het-ctrl
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl$clupro_tbl), rownames = FALSE)
+```
+
+```{r, echo=FALSE,eval=FALSE}
+# display enrich results of group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_ctrl
+# DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_ctrl$clupro_tbl), rownames = FALSE)
+```
+
+```{r, echo=FALSE,eval=FALSE}
+# display enrich results of group_PTPRZ_KO_ctrl_vs_PTPRZ_het_LPSIFNy
+# DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_LPSIFNy$clupro_tbl), rownames = FALSE)
+```
+
+### Enrichment results for PTPRZ KO-LPSIFNy vs PTPRZ het-LPSIFNy
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy$clupro_tbl), rownames = FALSE)
+```
+
+### Enrichment results for PTPRZ het-LPSIFNy vs PTPRZ het-ctrl
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$clupro_tbl), rownames = FALSE)
+```
+
+### Enrichment results for PTPRZ-KO LPSIFNy vs PTPRZ KO-ctrl
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$clupro_tbl), rownames = FALSE)
+```
+```{r, eval=FALSE}
+# save "Enrich" tables in an excel sheet
+# Create a new workbook
+wb <- createWorkbook()
+
+# Iterate over each element in the `myresuSet` and add a new sheet
+for (contrast in names(myresuSet)) {
+  truncked_name <- str_remove_all(contrast,"group_|PTPRZ_")
+  addWorksheet(wb, sheetName = truncked_name)
+  writeData(wb, sheet = truncked_name, x = myresuSet[[contrast]]$clupro_tbl)
+}
+
+saveWorkbook(wb, "Enrich_results_ClusterPro.xlsx", overwrite = TRUE)
+```
+
+## Analysis with topGO
+
+```{r}
+# enrichment with topGO
+for (i in names(myresuSet)) {
+  message(i)
+  if (nrow(myresuSet[[i]][["tbl_res_DE"]]) > 0) {
+  myresuSet[[i]][["topGO_tbl"]] <- 
+    topGOtable(DEgenes = myresuSet[[i]][["tbl_res_DE"]]$geneSymbol, 
+               BGgenes = geneUniverseExpr, 
+               ontology = "BP",
+               geneID = "symbol",
+               addGeneToTerms = TRUE, 
+               topTablerows = 5000,
+               mapping = "org.Mm.eg.db")
+  }
+}
+```
+
+
+### Enrichment results for PTPRZ KO-ctrl vs PTPRZ het-ctrl
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl$topGO_tbl), rownames = FALSE)
+```
+
+```{r, echo=FALSE,eval=FALSE}
+# enrich results for group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_ctrl
+# DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_ctrl$topGO_tbl), rownames = FALSE)
+```
+
+```{r}
+# enrich results for group_PTPRZ_KO_ctrl_vs_PTPRZ_het_LPSIFNy
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_LPSIFNy$topGO_tbl), rownames = FALSE)
+```
+
+### Enrichment results for PTPRZ KO-LPSIFNy vs PTPRZ het-LPSIFNy
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy$topGO_tbl), rownames = FALSE)
+```
+
+### Enrichment results for PTPRZ het-LPSIFNy vs PTPRZhet-ctrl
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$topGO_tbl), rownames = FALSE)
+```
+
+### Enrichment results for PTPRZ-KO LPSIFNy vs PTPRZ KO-ctrl
+
+```{r}
+DT::datatable(as.data.frame(myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$topGO_tbl), rownames = FALSE)
+```
+
+```{r, eval=FALSE}
+# save "Enrich" tables in an excel sheet
+# Create a new workbook
+wb <- createWorkbook()
+
+# Iterate over each element in the `myresuSet` and add a new sheet
+for (contrast in names(myresuSet)) {
+  truncked_name <- str_remove_all(contrast,"group_|PTPRZ_")
+  addWorksheet(wb, sheetName = truncked_name)
+  writeData(wb, sheet = truncked_name, x = myresuSet[[contrast]]$topGO_tbl)
+}
+
+saveWorkbook(wb, "Enrich_results_TopGO.xlsx", overwrite = TRUE)
+```
+
+# Interactive Exploration with `GeneTonic`
+
+This data can be further explored interactively with `r BiocStyle::Biocpkg("GeneTonic")`. For this, we need to create a `GeneTonicList`
+
+```{r}
+# function to easily generate GeneTonicLists for different contrasts
+resuset_to_gtl <- function(myresuSet, result_name, dds, anno_df, enrich_algo) {
+  dds_gtl <- dds
+  anno_df_gtl <- anno_df
+  res_de_gtl <- myresuSet[[result_name]][["res_DESeq"]]
+  
+  if (enrich_algo == "topGO_tbl") {
+    res_enrich_gtl <- GeneTonic::shake_topGOtableResult(myresuSet[[result_name]][["topGO_tbl"]])
+  } else if (enrich_algo == "clupro_tbl") {
+    res_enrich_gtl <- GeneTonic::shake_enrichResult(myresuSet[[result_name]][["clupro_tbl"]])
+  }
+  
+  
+  gtl_assembled <- GeneTonicList(
+    dds = dds_gtl,
+    res_de = res_de_gtl,
+    res_enrich = res_enrich_gtl,
+    annotation_obj = anno_df_gtl
+  )
+  
+  return(gtl_assembled)
+}
+```
+
+```{r}
+gtl_KO_unstim_vs_HET_unstim <- resuset_to_gtl(myresuSet, "group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl", dds, anno_df, enrich_algo = "clupro_tbl")
+gtl_KO_stim_vs_HET_stim <- resuset_to_gtl(myresuSet, "group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy", dds_releveled, anno_df, enrich_algo = "clupro_tbl")
+gtl_HET_stim_vs_HET_unstim <- resuset_to_gtl(myresuSet, "group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl", dds, anno_df, enrich_algo = "clupro_tbl")
+gtl_KO_stim_vs_KO_unstim <- resuset_to_gtl(myresuSet, "group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl", dds_releveled, anno_df, enrich_algo = "clupro_tbl")
+
+```
+
+```{r save1, eval=FALSE}
+saveRDS(gtl_KO_unstim_vs_HET_unstim, "gtl_KO_unstim_vs_HET_unstim.RDS")
+saveRDS(gtl_KO_stim_vs_HET_stim, "gtl_KO_stim_vs_HET_stim.RDS")
+saveRDS(gtl_HET_stim_vs_HET_unstim, "gtl_HET_stim_vs_HET_unstim.RDS")
+saveRDS(gtl_KO_stim_vs_KO_unstim,"gtl_KO_stim_vs_KO_unstim.RDS")
+```
+
+```{r save, eval=FALSE}
+saveRDS(dds, "dds_tecs_ptprz_ko_vs_het.RDS")
+saveRDS(dds_het,"dds_het_stim_vs_unstim.RDS")
+saveRDS(dds_ko,"dds_ko_stim_vs_unstim.RDS")
+```
+
+Now  we can use `GeneTonic` to explore the data by simply typing …
+
+```{r eval=FALSE}
+gtl <- readRDS("_gtl/gtl_HET_stim_vs_HET_unstim.RDS") # just import any GeneTonicList
+GeneTonic(gtl = gtl)
+```
+
+# Further Analysis ...
+
+## DE Analysis without LFC shrinkage 
+
+```{r, echo=FALSE}
+alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, species) {
+  
+  # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
+  id_contrast <- contrast
+  resuSet[[id_contrast]] <- list()
+  
+  # mycoef <- resultsNames(dds_obj)[2]
+  mycoef <- contrast
+  
+  message("Extracting results...")
+  resuSet[[id_contrast]][["res_DESeq"]] <- results(dds_obj,name = mycoef, alpha = FDR)
+  # message("Performing LFC shrinkage...")
+  #resuSet[[id_contrast]][["res_DESeq"]] <- lfcShrink(dds_obj,coef = mycoef,res = resuSet[[id_contrast]][["res_DESeq"]], type = "apeglm") 
+  resuSet[[id_contrast]][["res_DESeq"]]$SYMBOL <- anno_df$gene_name[match(rownames(resuSet[[id_contrast]][["res_DESeq"]]), anno_df$gene_id)]
+  
+  message("Summary MAplot...")
+  summary(resuSet[[id_contrast]][["res_DESeq"]])
+  resuSet[[id_contrast]][["maplot_res"]] <- 
+    ideal::plot_ma(resuSet[[id_contrast]][["res_DESeq"]], ylim = c(-2,2), title = id_contrast, FDR = FDR)
+  
+  message("Extracting tables...")
+  resuSet[[id_contrast]][["tbl_res_all"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]])
+  resuSet[[id_contrast]][["tbl_res_all"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_all"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anns$ensembl_gene_id)]
+  
+  message("Extracting DEtables...")
+  resuSet[[id_contrast]][["tbl_res_DE"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]],FDR = FDR)
+  resuSet[[id_contrast]][["tbl_res_DE"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$chromosome_name <- anns$chromosome_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
+  
+  if(nrow(resuSet[[id_contrast]][["tbl_res_DE"]]) > 0) {
+    message("Generating interactive DEtable...")
+    resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
+    resuSet[[id_contrast]][["etbl_res_DE"]]$id <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$id, species = species)
+    resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol)
+  }
+  
+  mybuttons <- c('copy', 'csv', 'excel', 'pdf', 'print')
+  datatable(resuSet[[id_contrast]][["etbl_res_DE"]],caption = paste0(id_contrast,", DE genes"),escape=F, extensions = 'Buttons', options = list(dom = 'Bfrtip',buttons = mybuttons))
+  
+  return(resuSet)
+}
+```
+
+
+These are our main contrasts
+
+```{r contrast_unshrunk}
+dds_unshrunk <- dds
+contrasts <- resultsNames(dds_unshrunk)
+contrasts
+```
+
+### DE - PTPRZ1 KO-ctr vs PTPRZ1 Het-ctrl
+
+This would be PTPRZ1 KO-ctrl vs PTPRZ1 Het-ctrl (in other words here we are comparing KO vs WT when the cells are not stimulated)
+
+```{r}
+myresuSet_unshrunk <- list()
+myresuSet_unshrunk <- alltheresults(
+  myresuSet_unshrunk, dds_unshrunk,
+  contrast = c("group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet_unshrunk$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl$maplot_res
+DT::datatable(myresuSet_unshrunk$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+
+```
+
+Now let's change the reference level
+
+```{r}
+dds_releveled_unshrunk <- dds_unshrunk
+dds_releveled_unshrunk$group <- relevel(dds_releveled_unshrunk$group, "PTPRZ_het_LPSIFNy")
+dds_releveled_unshrunk <- nbinomWaldTest(dds_releveled_unshrunk)
+resultsNames(dds_releveled_unshrunk)
+```
+
+### DE - PTPRZ1 KO-stim vs PTPRZ 1 Het-stim
+
+This would be PTPRZ1 KO-stim vs PTPRZ 1 Het-stim
+
+```{r}
+myresuSet_unshrunk <- alltheresults(
+  myresuSet_unshrunk, dds_releveled_unshrunk,
+  contrast = c("group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet_unshrunk$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy$maplot_res
+DT::datatable(myresuSet_unshrunk$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+### DE - PTPRZ1 Het-stim vs PTPRZ Het-ctrl
+
+This would be PTPRZ1 Het-stim vs PTPRZ Het-ctrl
+
+These are our main contrasts
+
+```{r}
+dds_het_unshrunk <- dds_het
+contrasts <- resultsNames(dds_het_unshrunk)
+contrasts
+```
+
+```{r}
+myresuSet_unshrunk <- alltheresults(
+  myresuSet_unshrunk, dds_het_unshrunk,
+  contrast = c("group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet_unshrunk$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$maplot_res
+DT::datatable(myresuSet_unshrunk$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+### DE - PTPRZ1 KO-stim vs PTPRZ KO-ctrl
+
+This would be PTPRZ1 KO-stim vs PTPRZ KO-ctrl
+
+These are our main contrasts
+
+```{r}
+dds_ko_unshrunk <- dds_ko
+contrasts <- resultsNames(dds_ko_unshrunk)
+contrasts
+```
+
+```{r}
+myresuSet_unshrunk <- alltheresults(
+  myresuSet_unshrunk, dds_ko_unshrunk,
+  contrast = c("group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl"), FDR = FDR,
+  anno_df = anno_df, anns = anns, species = "Mus_musculus")
+myresuSet_unshrunk$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$maplot_res
+DT::datatable(myresuSet_unshrunk$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$etbl_res_DE, escape = FALSE, rownames = FALSE)
+```
+
+```{r, eval=FALSE}
+# save "DE" tables in an excel sheet
+# Create a new workbook
+wb <- createWorkbook()
+
+# Iterate over each element in the `myresuSet` and add a new sheet
+for (contrast in names(myresuSet_unshrunk)) {
+  truncked_name <- str_remove_all(contrast,"group_|PTPRZ_")
+  addWorksheet(wb, sheetName = truncked_name)
+  writeData(wb, sheet = truncked_name, x = myresuSet_unshrunk[[contrast]]$tbl_res_DE)
+}
+
+saveWorkbook(wb, "DE_unshrunk_gene_list.xlsx", overwrite = TRUE)
+```
+
+
+## Visualizations ...
+
+### Heatmap of the common DE genes in the comparison KO vs HET
+
+```{r}
+# heatmap
+# start by creating gene signatures, which is the union of DE genes in ctrl and stim condition
+de_ctr <- myresuSet$group_PTPRZ_KO_ctrl_vs_PTPRZ_het_ctrl$tbl_res_DE
+de_stim <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_het_LPSIFNy$tbl_res_DE
+# gene signature is the union
+gene_signature <- rbind(de_ctr,de_stim)
+# use the normalized counts
+vst <- vst(dds)
+
+vst_corrected <- vst
+# vst_corrected <- vst[, vst_corrected$genotype == "PTPRZ_KO"]
+# vst_corrected$donor_animal <- droplevels(vst_corrected$donor_animal)
+
+# correct for batch effect 
+assay(vst_corrected) <- limma::removeBatchEffect(assay(vst_corrected), vst_corrected$donor_animal)
+#
+vst <- vst_corrected
+
+# create matrix for heatmap
+de_union <- assay(vst)[unique(gene_signature$id),]
+#rownames(de_union) <- gene_signature$SYMBOL
+rownames(de_union) <- anno_df[rownames(de_union),]$gene_name
+# create annot_col
+df <- data.frame("condition" = vst$condition,
+                 "genotype" = vst$genotype,
+                 "donor" = vst$donor_animal)
+
+rownames(df) <- vst$id
+
+# reorder the columns for better visualization
+new_order <- c(
+  "sample_109", 
+  "sample_183", 
+  "sample_216", 
+  "sample_249", 
+  "sample_305",
+  
+  "sample_110", 
+  "sample_184", 
+  "sample_215",
+  "sample_248", 
+  "sample_304", 
+  
+  "sample_202", 
+  "sample_353", 
+  "sample_213", 
+  "sample_241",
+  "sample_363",
+
+  "sample_201", 
+  "sample_354", 
+  "sample_222", 
+  "sample_242", 
+  "sample_362"
+  
+)
+de_union <- de_union[, new_order]
+# df <- df[order(df$genotype,df$condition), ]
+df <- df[order(df$genotype,df$condition), ]
+rownames(df) <- new_order
+
+
+ann_colors = list(
+    condition = c("ctrl" = "#8ee6ba", "LPSIFNy" = "#fb9a99"),
+    genotype = c("PTPRZ_het" = "#478ffc", "PTPRZ_KO" = "#95d9f0"),
+    donor = c("mouse_1" =  "#9e0142",
+              "mouse_2" =  "#ff99c4",
+              "mouse_3" =  "#f46d43",
+              "mouse_4" =  "#fdae61",
+              "mouse_5" =  "#fee08b",
+              "mouse_6" =  "#e8e866",
+              "mouse_7" =  "#bccf5b",
+              "mouse_8" =  "#99ffe6",
+              "mouse_9" =  "#66c2a5",
+              "mouse_10" = "#cab2d6")
+    
+)
+
+
+pheatmap::pheatmap((de_union - rowMeans(de_union))/rowSds(de_union),
+                   # scale = "row",
+                   border_color = "white",
+                   annotation = df,
+                   cluster_cols = F,
+                   annotation_colors = ann_colors,
+                   show_colnames = F)
+```
+
+### Figure 7E
+
+```{r}
+######################
+# Figure 7E manuscript
+######################
+gene_signature_TEC <- c(
+  "Clec7a", 
+  "Clec4e", "Clec4n", "Il1a", "Il1b",
+  "Il6", "Il12a", "Il12b", "Il34", "Il36b",
+  "Tnf", "Ccl2", "Ccl3", "Ccl5", "Ccl7",
+  "Ccl8", "Cxcl3", "Cxcl5","Cxcl9", "Ccl20",
+  "Cxcl10", "Cxcl16", "Cx3cl1", "Cx3cr1", "Csf1",
+  "Nos1", "Nos2", "Nos3", "Nox1", "Casp1",
+  "Icam1", "Vcam1"
+)
+
+# Clec7e doesn't exist, instead we put Clec7a
+
+# create matrix for heatmap
+matched_id <- rowData(vst)$SYMBOL %in% gene_signature_TEC 
+heatmap_data <- assay(vst)[matched_id, ]
+rownames(heatmap_data) <- rowData(vst)$SYMBOL[matched_id]
+
+# create annot_col
+df <- data.frame("group" = vst$group)
+rownames(df) <- vst$id
+
+# reorder the columns for better visualization
+# new_order <- c(
+#   "sample_109", "sample_183", "sample_216", "sample_249", "sample_305",
+#   "sample_110", "sample_184", "sample_215", "sample_248", "sample_304",
+#   "sample_202", "sample_353", "sample_213", "sample_241", "sample_363",
+#   "sample_201", "sample_354", "sample_222", "sample_242", "sample_362"
+# )
+
+heatmap_data <- heatmap_data[, new_order]
+df <- as.data.frame(df[order(df$group),])
+#rename col
+names(df)[names(df) == "df[order(df$group), ]"] <- "group"
+rownames(df) <- new_order
+
+pheatmap::pheatmap(heatmap_data - rowMeans(heatmap_data),
+                   annotation = df,
+                    cluster_cols = F,
+                   scale = "row",
+                   border_color = "white",
+                   show_colnames = F)
+
+#  another alternative for the same plot
+gs_heatmap(se=vst[,new_order],
+           genelist = anno_df$gene_id[match(gene_signature_TEC, anno_df$gene_name)],
+           #geneset_id = "GO:0002833",
+           annotation_obj = anno_df,
+           gtl = gtl_KO_stim_vs_KO_unstim,
+           scale_row = T,
+           show_row_dend = F,
+           show_column_names = F,
+           #row_km = 2,
+           anno_col_info = "group")
+
+
+
+```
+
+you can choose any of the above plots :)
+
+### Figure 11A - supplement
+
+```{r}
+#########################
+# Figure 11A - supplement
+#########################
+total_results <- res_total
+
+highlight_genes <- c("Ifi209", "Csf2", "Ccl20", "Ccl3", "Il1rn", "Tnfrsf1b")
+# gene_colors <- c("Ifi209" = "#198038",
+#                  "Csf2" = "#b28600",
+#                  "Ccl20" = "#ee538b",
+#                  "Ccl3" = "#ff0008",
+#                  "Il1rn" = "#002d9c",
+#                  "Tnfrsf1b" = "#1192e8")
+
+total_results$highlight_color <- ifelse(total_results$SYMBOL %in% highlight_genes, 
+                                    "red", 
+                                    "gray")
+
+# hide all the labels
+total_results$SYMBOL <- ""
+ix_label <- which(res_total$SYMBOL %in% highlight_genes)
+# label only heilight_genes
+total_results$SYMBOL[ix_label] <- res_total$SYMBOL[ix_label]
+
+
+ggplot(total_results,
+       aes(x = log2FoldChange_het, y = log2FoldChange_ko, label = SYMBOL)) +
+  geom_point(
+    aes(color = highlight_color),
+    size = 1.3,
+    alpha = ifelse(total_results$SYMBOL %in% highlight_genes, 1, 0.2)
+  ) +
+  scale_color_identity() +
+  theme_linedraw() +
+  ggrepel::geom_text_repel(box.padding = 0.5, max.overlaps = Inf) +
+  geom_hline(yintercept = 0,
+             color = "grey",
+             linetype = "dashed") +
+  geom_vline(xintercept = 0,
+             color = "grey",
+             linetype = "dashed")
+
+```
+
+### Figure 11B - supplement
+
+```{r}
+#########################
+# Figure 11B - supplement
+#########################
+
+# add enrich results
+enrich_res_ko <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$topGO_tbl
+enrich_res_het <- myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$topGO_tbl
+
+# calculate z score
+enrich_res_ko <- get_aggrscores(
+  shake_topGOtableResult(enrich_res_ko),
+  myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$res_DESeq,
+  annotation_obj = anno_df
+)
+
+enrich_res_het <- get_aggrscores(
+  shake_topGOtableResult(enrich_res_het),
+  myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$res_DESeq,
+  annotation_obj = anno_df
+)
+
+
+# add enrich results
+# enrich_res_ko <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$clupro_tbl
+# enrich_res_het <- myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$clupro_tbl
+# 
+# # extract the results (to obtain the z score)
+# enrich_res_ko_df <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$clupro_tbl@result
+# enrich_res_het_df <- myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$clupro_tbl@result
+
+# shake results to be able to directly use it in GeneTonic
+# enrich_res_ko_shaked <- shake_enrichResult(enrich_res_ko)
+# enrich_res_het_shaked <- shake_enrichResult(enrich_res_het)
+# 
+# # add the zscores
+# enrich_res_het_shaked$z_score <- enrich_res_het_df$zScore
+# enrich_res_ko_shaked$z_score <- enrich_res_ko_df$zScore
+
+# subset for the terms of interest 
+go_terms <- c(
+  "GO:0001819",
+  "GO:0031349",
+  "GO:0045088",
+  "GO:0048525",
+  "GO:0002250",
+  "GO:0002697",
+  "GO:0030198"
+)
+
+res_enrich1 <- enrich_res_ko[enrich_res_ko$gs_id %in% go_terms,]
+res_enrich2 <- enrich_res_het[enrich_res_het$gs_id %in% go_terms,]
+
+GeneTonic::gs_summary_overview_pair(res_enrich = res_enrich1,
+                                    res_enrich2 = res_enrich2)
+
+
+# gs_heatmap(se = vst[,new_order],
+#            res_enrich = res_enrich1,
+#            annotation_obj = anno_df,
+#            geneset_id = go_terms[1],
+#            anno_col_info = c("donor_animal","genotype","group"),
+#            scale_row = T)
+
+# heatmap for each pathway
+for (i in go_terms) {
+  p <- gs_heatmap(se = vst[,new_order],
+           res_enrich = res_enrich1,
+           annotation_obj = anno_df,
+           geneset_id = i,
+           anno_col_info = c("donor_animal","genotype","group"),
+           scale_row = T,
+           show_column_names = F
+           )
+  p
+}
+
+```
+
+Or even better a heatmap with all the pathway together...
+
+#### Heatmap pathway for the HET genotype
+
+```{r}
+# a heatmap with all the pathway together
+scores_mat_het <- gs_scores(
+  se = vst,
+  res_de = myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$res_DESeq,
+  res_enrich = enrich_res_het,
+  annotation_obj = anno_df
+)
+#subset for terms of interest
+go_terms <- c(
+"positive regulation of cytokine production|GO:0001819",
+"positive regulation of defense response|GO:0031349",
+"regulation of innate immune response|GO:0045088",
+"negative regulation of viral process|GO:0048525",
+"adaptive immune response|GO:0002250",
+"regulation of immune effector process|GO:0002697",
+"extracellular matrix organization|GO:0030198"
+)
+####
+scores_mat_subset_het <- scores_mat_het[rownames(scores_mat_het) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_het,
+              gs_ids = go_terms,
+              n_gs = 10)
+
+# topGO
+# res_enrich_ko <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$topGO_tbl
+# res_enrich_het <- myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$topGO_tbl
+# enrich_res_ko_shaked <- shake_topGOtableResult(enrich_res_ko) # not calculated with pcaExplorer::topGOtable
+# res_de_ko <- myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$res_DESeq
+# res_de_het <- myresuSet$group_PTPRZ_het_LPSIFNy_vs_PTPRZ_het_ctrl$res_DESeq
+# #calculate the z score
+# z_scores <- get_aggrscores(res_enrich_ko, res_de_ko, anno_df)
+
+```
+
+#### Heatmap pathway for the KO genotype
+
+```{r}
+scores_mat_ko <- gs_scores(
+  se = vst,
+  res_de = myresuSet$group_PTPRZ_KO_LPSIFNy_vs_PTPRZ_KO_ctrl$res_DESeq,
+  res_enrich = enrich_res_ko,
+  annotation_obj = anno_df
+)
+#subset for terms of interest
+go_terms <- c(
+"positive regulation of cytokine production|GO:0001819",
+"positive regulation of defense response|GO:0031349",
+"regulation of innate immune response|GO:0045088",
+"negative regulation of viral process|GO:0048525",
+"adaptive immune response|GO:0002250",
+"regulation of immune effector process|GO:0002697",
+"extracellular matrix organization|GO:0030198"
+)
+####
+scores_mat_subset_ko <- scores_mat_ko[rownames(scores_mat_ko) %in% go_terms, ]
+
+gs_scoresheat(scores_mat_subset_ko,
+              gs_ids = go_terms,
+              n_gs = 10)
+```
+
+
+
+# Session information {-}
+
+```{r sessioninfo}
+BIUMmisc::sessioninfo_extra()
+```
