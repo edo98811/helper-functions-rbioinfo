@@ -1,3 +1,30 @@
+#' Convert a result set to a GeneTonicList
+#'
+#' This function converts a result set to a GeneTonicList for different contrasts.
+#'
+#' @param myresuSet A list containing the result sets.
+#' @param result_name A character string specifying the name of the result to be used.
+#' @param dds A DESeqDataSet object.
+#' @param anno_df A data frame containing annotation information.
+#' @param enrich_algo A character string specifying the enrichment algorithm to be used. 
+#'        Options are "not_given", "topGO_tbl", or "clupro_tbl". Default is "not_given".
+#'
+#' @return A GeneTonicList object containing the DESeqDataSet, DE results, enrichment results, and annotation data.
+#' @export
+#'
+#' @examples
+#' # Example usage:
+#' myresuSet <- list(
+#'   contrast1 = list(
+#'     res_DESeq = res_de_example,
+#'     topGO_tbl = topgo_tbl_example,
+#'     clupro_tbl = clupro_tbl_example
+#'   )
+#' )
+#' result_name <- "contrast1"
+#' dds <- dds_example
+#' anno_df <- anno_df_example
+#' gtl <- resuset_to_gtl(myresuSet, result_name, dds, anno_df, enrich_algo = "topGO_tbl")
 # function to easily generate GeneTonicLists for different contrasts
 resuset_to_gtl <- function(myresuSet, result_name, dds, anno_df, enrich_algo = "not_given") {
   dds_gtl <- dds
