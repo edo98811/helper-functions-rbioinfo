@@ -4,11 +4,31 @@ This is a package used to create reports,
 
 # Installation 
 
-[git@github.com:edo98811/helper-functions-rbioinfo.git](https://github.com/edo98811/helper-functions-rbioinfo.git)
+[https://github.com/edo98811/helper-functions-rbioinfo.git](https://github.com/edo98811/helper-functions-rbioinfo.git)
 
+To install this package, you can use the `remotes` package in R:
+
+```r
+# Install the remotes package if you haven't already
+install.packages("remotes")
+
+# Use remotes to install the package from GitHub
+remotes::install_github("edo98811/helper-functions-rbioinfo")
+```
+
+# Parameters
+
+The `params` list contains the following elements:
+
+* `filter_complete_dds`: Logical, whether to filter the complete DDS object including only a subset (default is FALSE).
+* `load_complete_dds`: Logical, whether to load the complete DDS object (default is FALSE).
+* `load_dds_objects`: Logical, whether to load DDS objects (default is TRUE).
+* `save_dds_objects`: Logical, whether to save DDS objects (default is FALSE).
+* `complete_dds_source`: Path to the complete DDS source file.
+* `experiment_name`: Name of the experiment.
+* `experiment_metadata_file`: Path to the experiment metadata file (xlsx format).
+* `create_annotation_df`: Logical, whether to create annotation data frames (default is FALSE).
 # Available functions 
-
-## Available functions
 
 
 `add_symbol_to_dds()`: Adds gene symbols to a DESeq2 dataset.
