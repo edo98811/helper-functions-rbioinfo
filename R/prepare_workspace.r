@@ -34,13 +34,6 @@
 #'
 #' @importFrom readxl read_xlsx
 #' @importFrom purrr pluck
-#' @importFrom base file.exists
-#' @importFrom base stop
-#' @importFrom base warning
-#' @importFrom base message
-#' @importFrom base tryCatch
-#' @importFrom base parent.frame
-#' @importFrom base readRDS
 #' 
 prepare_workspace <- function(params) {
 
