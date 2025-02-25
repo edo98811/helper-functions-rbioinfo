@@ -1,18 +1,4 @@
-# functions to make results nicer
-createLinkGO <- function(val) {
-  sprintf('<a href="http://amigo.geneontology.org/amigo/term/%s" target="_blank" class="btn btn-primary">%s</a>',val,val)
-}
 
-createLinkENS  <- function(val, species="Mus_musculus") {
-  paste0('<a href="http://www.ensembl.org/',species,'/Gene/Summary?g=',val,'" target="_blank" class="btn btn-primary">',val,'</a>')
-}
-
-createLinkGeneSymbol <- function(val) {
-  # possibilities:
-  # ncbi
-  # genecards
-  paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=',val,'[sym]" target="_blank" class="btn btn-primary">',val,'</a>')
-}
 # sections present in myResuSet
 #  - res_DESeq -> DESeq2 results object
 #  - maplot_res -> MA plot of DESeq2 results
@@ -21,6 +7,34 @@ createLinkGeneSymbol <- function(val) {
 #  - etbl_res_DE -> Interactive table of significant DESeq2 results
 #  - clupro_tbl -> ClusterProfiler results table (not implemented in this script)
 #  - topGO_tbl -> topGO results table (not implemented in this script)
+#' Extract and process DESeq2 results
+#'
+#' This function extracts and processes DESeq2 results for a given contrast, 
+#' performs LFC shrinkage, and generates various result tables and plots.
+#'
+#' @param resuSet A list to store the results.
+#' @param dds_obj A DESeqDataSet object.
+#' @param contrast A character vector specifying the contrast.
+#' @param FDR A numeric value specifying the false discovery rate threshold.
+#' @param anno_df A data frame containing gene annotations with columns `gene_id` and `gene_name`.
+#' @param anns A data frame containing additional annotations with columns `ensembl_gene_id`, `description`, and `chromosome_name`.
+#' @param species A character string specifying the species for creating links.
+#'
+#' @return A list containing the processed results, including DESeq2 results, 
+#'         LFC shrinkage results, result tables, and interactive tables.
+#'
+#' @examples
+#' \dontrun{
+#' resuSet <- list()
+#' dds_obj <- DESeqDataSet(...)
+#' contrast <- c("condition", "treated", "control")
+#' FDR <- 0.05
+#' anno_df <- data.frame(gene_id = ..., gene_name = ...)
+#' anns <- data.frame(ensembl_gene_id = ..., description = ..., chromosome_name = ...)
+#' species <- "Homo sapiens"
+#' alltheresults(resuSet, dds_obj, contrast, FDR, anno_df, anns, species)
+#' }
+#' @export
 
 alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, species) {
 
@@ -66,4 +80,20 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
   datatable(resuSet[[id_contrast]][["etbl_res_DE"]],caption = paste0(id_contrast,", DE genes"),escape=F, extensions = 'Buttons', options = list(dom = 'Bfrtip',buttons = mybuttons))
   
   return(resuSet)
+}
+
+# functions to make results nicer
+createLinkGO <- function(val) {
+  sprintf('<a href="http://amigo.geneontology.org/amigo/term/%s" target="_blank" class="btn btn-primary">%s</a>',val,val)
+}
+
+createLinkENS  <- function(val, species="Mus_musculus") {
+  paste0('<a href="http://www.ensembl.org/',species,'/Gene/Summary?g=',val,'" target="_blank" class="btn btn-primary">',val,'</a>')
+}
+
+createLinkGeneSymbol <- function(val) {
+  # possibilities:
+  # ncbi
+  # genecards
+  paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=',val,'[sym]" target="_blank" class="btn btn-primary">',val,'</a>')
 }

@@ -1,3 +1,24 @@
+#' Save Analysis Objects
+#'
+#' This function saves various analysis objects to disk. If an experiment name is provided in the `params` list, 
+#' the objects are saved in a directory named after the experiment within the `analyses_data` directory. 
+#' Otherwise, the objects are saved in the current working directory.
+#'
+#' @param params A list containing parameters for the analysis. Must include `experiment_name` if saving to a specific directory.
+#' @param myresuSet The main results set to be saved.
+#' @param dds The DESeq2 results object to be saved.
+#' @param dds_releveled Optional. A DESeq2 results object with releveled factors to be saved.
+#' @param dds_interaction_term Optional. A DESeq2 results object with interaction terms to be saved.
+#' @param gtl Optional. A gene-to-locus mapping object to be saved.
+#'
+#' @return None. This function is called for its side effects.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' params <- list(experiment_name = "experiment_1")
+#' save_analysis_objects(params, myresuSet, dds, dds_releveled, dds_interaction_term, gtl)
+#' }
 save_analysis_objects <- function(
     params, 
     myresuSet, 

@@ -1,3 +1,26 @@
+#' Annotate Datasets
+#'
+#' This function annotates datasets by retrieving gene annotations from the Ensembl database.
+#'
+#' @param dds A DESeq2 dataset object.
+#'
+#' @return A list containing:
+#' \item{anns}{A data frame with Ensembl gene IDs, external gene names, and descriptions.}
+#' \item{anno_df}{A data frame with annotations retrieved using the `pcaExplorer` package.}
+#'
+#' @importFrom pcaExplorer get_annotation_orgdb
+#' @importFrom biomaRt useMart getBM
+#' @importFrom SummarizedExperiment rowData
+#' @importFrom stats setNames
+#'
+#' @examples
+#' \dontrun{
+#' library(DESeq2)
+#' dds <- makeExampleDESeqDataSet()
+#' annotations <- annotation_datasets(dds)
+#' }
+#'
+#' @export
 annotation_datasets <- function(dds){
   head(rownames(rowData(dds)))
 
