@@ -35,12 +35,9 @@ create_annotations <- function(dds) {
 
 
 annotation_datasets <- function(dds){
-  head(rownames(rowData(dds)))
 
   row_names <- rownames(as.data.frame(rowData(dds)))
   rownames(dds) <- gsub("\\.[0-9]*$", "", row_names)
-
-  head(rownames(rowData(dds)))
 
   anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Mm.eg.db", "ENSEMBL")
   # anno df and anns hanno la stessa funzione
