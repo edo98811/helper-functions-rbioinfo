@@ -14,13 +14,13 @@
 #' }
 #'
 #' @export
-create_annotations_proteomics <- function(se) {
+create_annotations_proteomics <- function(df) {
 
-  if (!inherits(se, "SummarizedExperiment")) stop("se object is not of class 'SummarizedExperiment'. Please provide a valid se object.")
+  if (!is.data.frame(df)) stop("The input object is not a dataframe. Please provide a valid dataframe.")
 
   anno_df_path <- file.path("analyses_data", "anno_df.RDS")
 
-  annotations <- annotation_datasets(se)
+  annotations <- annotation_datasets_proteomics(df)
   anno_df <- annotations$anno_df
   saveRDS(anno_df, anno_df_path)
   remove(annotations)
@@ -30,9 +30,9 @@ create_annotations_proteomics <- function(se) {
 
 
 
-annotation_datasets <- function(se){
+annotation_datasets_proteomics <- function(features_rowdata){
 
-  row_names <- as.data.frame(rowData(se))
+  # <- as.data.frame(rowData(se))
 
   # Check if the input dataframe contains a 'proteinID' column
   if (!"proteinID" %in% colnames(features_rowdata)) {
@@ -53,9 +53,9 @@ annotation_datasets <- function(se){
                     values = features_rowdata$proteinID,
                     mart = ensembl)
 
-  anns <- anns[match(rownames(se), anns$ensembl_gene_id), ]
+  anns <- anns[match(features_rowdata$proteinID, anns$uniprotswissprot), ]
 
   return(list(
-    anno_df = anno_df)
+    anno_df = anns)
   )
 }

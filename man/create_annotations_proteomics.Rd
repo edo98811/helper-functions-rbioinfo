@@ -4,7 +4,7 @@
 \alias{create_annotations_proteomics}
 \title{Create Annotations}
 \usage{
-create_annotations_proteomics(se)
+create_annotations_proteomics(df)
 }
 \arguments{
 \item{se}{A SummarizedExperiment object. The function will stop if the provided object is not of class 'SummarizedExperiment'.}
