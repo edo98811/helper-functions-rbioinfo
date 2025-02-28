@@ -40,7 +40,7 @@ annotation_datasets_proteomics <- function(features_rowdata){
   }
 
   # Connect to Ensembl database
-  ensembl <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://www.ensembl.org")
+  ensembl <- biomaRt::useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://www.ensembl.org")
   # "www" → Main server (https://www.ensembl.org)
   # "useast" → US East (https://useast.ensembl.org)
   # "uswest" → US West (https://uswest.ensembl.org)
@@ -48,7 +48,7 @@ annotation_datasets_proteomics <- function(features_rowdata){
 
 
   # Get gene names from protein accession (UniProt ID)
-  anns <- getBM(attributes = c("uniprotswissprot", "mgi_symbol", "ensembl_gene_id", "description"), 
+  anns <- biomaRt::getBM(attributes = c("uniprotswissprot", "mgi_symbol", "ensembl_gene_id", "description"), 
                     filters = "uniprotswissprot",
                     values = features_rowdata$proteinID,
                     mart = ensembl)
