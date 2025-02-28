@@ -36,35 +36,57 @@
 #' @importFrom purrr pluck
 #' 
 prepare_workspace <- function(params) {
+    if (purrr:pukk(params, "workflow", .default = "DESeq2") == "DESeq2") {
+      
+      tryCatch({
+        experiment_metadata <- readxl::read_xlsx(params$experiment_metadata_file, col_names = TRUE)
+        assign("experiment_metadata", experiment_metadata, envir = parent.frame())
+        message("experiment metadata loaded and saved in the workspace as dataframe with name 'experiment_metadata'")
+      }, error = function(e) {
+        stop("Failed to load experiment metadata: ", e$message)
+      })
+    
+    if (purrr::pluck(params, "load_gse", .default = FALSE)) {
+        tryCatch({
+          gse <- readRDS(file.path("analyses_data", "gse.RDS"))
+          assign("gse", gse, envir = parent.frame())
+          message("GSE object loaded and saved in the workspace as 'gse'")
+        }, error = function(e) {
+          warning("Failed to load gse: ", e$message)
+        })
+    } else warning("'load_gse' set to false")
+
+    if (purrr::pluck(params, "load_complete_dds", .default = FALSE)) {
+        tryCatch({
+          complete_dds <- readRDS(file.path(params$complete_dds_source))
+          assign("complete_dds", complete_dds, envir = parent.frame())
+          message("main dds object loaded and saved in the workspace as DESeqDataSet with name 'complete_dds'")
+        }, error = function(e) {
+          warning("Failed to load complete_dds: ", e$message)
+        })
+    } else warning("'load_complete_dds' set to false")
+
+  } else if (purrr::pluck(params, "workflow", .default = "DESeq2") == "summarized_experiment") {
 
     tryCatch({
-      experiment_metadata <- readxl::read_xlsx(params$experiment_metadata_file, col_names = TRUE)
-      assign("experiment_metadata", experiment_metadata, envir = parent.frame())
-      message("experiment metadata loaded and saved in the workspace as dataframe with name 'experiment_metadata'")
+    experiment_metadata <- readxl::read_xlsx(params$experiment_metadata_file, col_names = TRUE)
+    assign("experiment_metadata", experiment_metadata, envir = parent.frame())
+    message("experiment metadata loaded and saved in the workspace as dataframe with name 'experiment_metadata'")
     }, error = function(e) {
-      stop("Failed to load experiment metadata: ", e$message)
+    stop("Failed to load experiment metadata: ", e$message)
     })
-  
-  if (purrr::pluck(params, "load_gse", .default = FALSE)) {
-      tryCatch({
-        gse <- readRDS(file.path("analyses_data", "gse.RDS"))
-        assign("gse", gse, envir = parent.frame())
-        message("GSE object loaded and saved in the workspace as 'gse'")
-      }, error = function(e) {
-        warning("Failed to load gse: ", e$message)
-      })
-  } else warning("'load_gse' set to false")
 
+    tryCatch({
+      se <- loadRDS(file.path("analyses_data", "se.RDS"))
+      assign("se", se, envir = parent.frame())
+      message("se object loaded and saved in the workspace as 'gse'")
+    }, error = function(e) {
+      warning("Failed to load se: ", e$message)
+    })
 
-  if (purrr::pluck(params, "load_complete_dds", .default = FALSE)) {
-      tryCatch({
-        complete_dds <- readRDS(file.path(params$complete_dds_source))
-        assign("complete_dds", complete_dds, envir = parent.frame())
-        message("main dds object loaded and saved in the workspace as DESeqDataSet with name 'complete_dds'")
-      }, error = function(e) {
-        warning("Failed to load complete_dds: ", e$message)
-      })
-  } else warning("'load_complete_dds' set to false")
+  } else {
+    stop("Only DESeq2 and summarized_experiment workflows are supported")
+  }
 
   if (file.exists(anns_path) && file.exists(anno_df_path)) {
     anns <- readRDS(anns_path)
@@ -74,6 +96,5 @@ prepare_workspace <- function(params) {
     assign("anno_df", anno_df, envir = parent.frame())
 
   } else warning("anns and anno_df not loaded! create them after setting up the dds object")
-
 }
 
