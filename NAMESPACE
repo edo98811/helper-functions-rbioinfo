@@ -3,6 +3,7 @@
 export(add_symbols)
 export(alltheresults)
 export(create_annotations)
+export(create_annotations_proteomics)
 export(load_analyses)
 export(load_se_arrow)
 export(resuset_to_gtl)

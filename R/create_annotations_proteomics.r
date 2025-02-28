@@ -14,7 +14,7 @@
 #' }
 #'
 #' @export
-create_annotations <- function(se) {
+create_annotations_proteomics <- function(se) {
 
   if (!inherits(se, "SummarizedExperiment")) stop("se object is not of class 'SummarizedExperiment'. Please provide a valid se object.")
 
