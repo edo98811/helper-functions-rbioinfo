@@ -28,6 +28,8 @@ The `params` list contains the following elements:
 * `experiment_name`: Name of the experiment.
 * `experiment_metadata_file`: Path to the experiment metadata file (xlsx format).
 * `create_annotation_df`: Logical, whether to create annotation data frames (default is FALSE).
+* `workflow`: A character string specifying the workflow to use (default is "dds"). if working only with SummarizedExperiment write summarized_experiment
+
 # Available functions 
 
 
@@ -68,4 +70,19 @@ The `params` list contains the following elements:
     - `load_complete_dds`: Logical, whether to load the complete DDS object (default is FALSE).
     - `complete_dds_source`: Path to the complete DDS source file.
 
-`save_dds_arrow()`: Loads DDS objects using the Arrow package for efficient data handling.
+* `params`:(to work not with dds) A list containing the following elements:
+    - `experiment_metadata_file`: Path to the experiment metadata file (xlsx format).
+    - `workflow`: A character string specifying the workflow to use (needs to be "summarized_experiment").
+
+`save_se_arrow()`: Loads DDS objects using the Arrow package for efficient data handling. (to implement)
+
+`load_se_analyses()`: Loads previously saved SE analysis results. (to implement)
+
+`create_annotations_proteomics()`: Creates annotation data frame for proteomics data (anno_df).
+
+* `se`: a SummarizedExperiment (SE) object.
+
+`save_se()`: Saves a SummarizedExperiment (SE) object to a RDS file.
+
+* `se`: A SummarizedExperiment object to be saved.
+* `params`: A character string specifying the path where the SE object should be saved.
