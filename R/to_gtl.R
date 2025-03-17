@@ -1,6 +1,7 @@
-gtl_from_DGEList <- function(DGEList_object, topTable_results, res_enrich, annotation_obj, verbose = FALSE) {
+gtl_from_DGEList <- function(DGEList_object, topTable_results, res_enrich, annotation_obj) {
 
-    # as.integer(getCounts(DGEList_object))
+    # getCounts(DGEList_object) <- as.integer(getCounts(DGEList_object))
+    DGEList_object$counts <- round(DGEList_object$counts)
     dds <- DEFormats::as.DESeqDataSet(DGEList_object)
 
     SE_from_CI <- function(ci) {
@@ -35,16 +36,17 @@ gtl_from_DGEList <- function(DGEList_object, topTable_results, res_enrich, annot
         "pvalue",
         "padj",
         "SYMBOL")
+    
+    topTable_results <- topTable_results[,1:length(cols_to_have)]
+    colnames(topTable_results) <- cols_to_have
 
-    rownames(topTable_results) <- cols_to_have
-
-    res_de <- DESeqResults(topTable_results)
-
+    res_de <- DESeq2::DESeqResults(topTable_results)
+    
+    dds <- estimateSizeFactors(dds)
     gtl <- GeneTonicList(dds,
                         res_de,
                         res_enrich,
-                        annotation_obj,
-                        verbose = verbose)
+                        annotation_obj)
 
     return(gtl)
 }
