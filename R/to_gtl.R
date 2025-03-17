@@ -4,7 +4,8 @@ gtl_from_DGEList <- function(DGEList_object, topTable_results, res_enrich, annot
     dds <- DEFormats::as.DESeqDataSet(DGEList_object)
 
     SE_from_CI <- function(ci) {
-        return((ci[2] - ci[1]) / (2 * qnorm(0.975))) # 0.975 perche voglio la CI al 95% (sinistra e destra sono entrabe 0.025)
+        return((ci[2] - ci[1]) / (2 * qnorm(0.975))) # 0.975 perche voglio la CI al 95% (sinistra e destra sono entrabe 0.025) 
+        # (ma questo funziona solo per norm distribuition, tra l'altro)
         # qnorm: given an area, find the boundary value that determines this area.
         # https://www.rdocumentation.org/packages/limma/versions/3.28.14/topics/toptable -> from topTable CI.L and CI.R are the lower and upper bounds of the confidence interval for the log2 fold change.
     }
@@ -35,7 +36,7 @@ gtl_from_DGEList <- function(DGEList_object, topTable_results, res_enrich, annot
         "padj",
         "SYMBOL")
 
-    topTable_results <- rownames(topTable_results) <- cols_to_have
+    rownames(topTable_results) <- cols_to_have
 
     res_de <- DESeqResults(topTable_results)
 
