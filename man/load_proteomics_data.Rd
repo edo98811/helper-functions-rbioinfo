@@ -4,7 +4,7 @@
 \alias{load_proteomics_data}
 \title{Load Proteomics Data}
 \usage{
-load_proteomics_data(experiment_name)
+load_proteomics_data(params)
 }
 \arguments{
 \item{experiment_name}{A character string specifying the name of the experiment.}

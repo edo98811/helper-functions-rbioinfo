@@ -4,7 +4,13 @@
 \alias{save_proteomics_data}
 \title{Save Proteomics Data}
 \usage{
-save_proteomics_data(vdx, se, experiment_name, results_object = NULL)
+save_proteomics_data(
+  vdx,
+  se,
+  experiment_name,
+  params = list(),
+  results_object = NULL
+)
 }
 \arguments{
 \item{vdx}{A data object to be saved as an RDS file.}
