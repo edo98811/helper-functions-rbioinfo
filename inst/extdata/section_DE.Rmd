@@ -1,0 +1,79 @@
+
+
+
+# DE - Differential Expression
+
+## DE Analysis
+
+We need to prepare the dds objects in order to be sure we obtain the wished contrasts, and then perform the differential expression analysis with the DESeq2 package. We can see which object can be used to obtain which contrasts.
+
+```{r de-analysis, echo = FALSE}
+# if not load dds objects 
+if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)){
+
+  # releveling
+  dds$group <- relevel(dds$group, "ctrl")
+
+  # de analysis
+  dds <- DESeq(dds)
+
+  # relevel
+  # dds$group <- relevel(dds$group, ref = "lupus_ATII")
+  dds_releveled <- dds
+  dds_releveled$group <- relevel(dds_releveled$group, "AT2")
+  dds_releveled <- nbinomWaldTest(dds_releveled)
+}
+```
+
+```{r contrasts}
+# contrasts
+(contrasts <- resultsNames(dds))
+```
+```{r contrasts-releveled}
+# contrasts
+(contrasts_releveled <- resultsNames(dds_releveled))
+```
+
+## DE Parameters
+
+```{r FDR}
+# set FDR 
+FDR = 0.1 # false discovery rate
+```
+
+```{r myresuSet,  include = FALSE}
+if (!exists("myresuSet")) myresuSet <- list() # create if not loaded
+```
+
+## Contrasts
+
+You can select for which contrasts to see the DE results, to do this you can copy the following blocks as many times as you want and add the correct contrast name. The correct object also needs to be chosen.
+
+<!-- <details>
+
+<summary>click here to display DE results of </summary> -->
+
+```{r, echo = FALSE,include = FALSE}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
+
+```{r, results = 'asis', echo = FALSE}
+
+for (contrast in ontrasts) {
+
+  if (grepl("AT2$", contrast)) dds_to_use <- dds_releveled else dds_to_use <- dds # If you use a releveled object you cchange this line
+
+  if (!purrr::pluck(params, "load_dds_objects", .default = FALSE))
+    myresuSet <- alltheresults(
+      myresuSet, dds_to_use,
+      contrast = c(contrast), FDR = FDR,
+      anno_df = anno_df, anns = anns, species = "Mus_musculus")
+  # myresuSet[[contrast]]$maplot_res
+    cat(knitr::knit_print(DT::datatable(myresuSet[[contrast]]$etbl_res_DE, escape = FALSE, rownames = FALSE, 
+        caption = htmltools::tags$caption(style = 'caption-side: top; color:black;; font-size: 2em', contrast))))
+}
+rm(dds_to_use)
+```
+

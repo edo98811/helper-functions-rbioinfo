@@ -1,0 +1,15 @@
+
+# Number of reads
+
+Let's check the number of assigned reads per sample as a proxy of the sequencing depth in the main dds object.
+
+```{r plot-seq-depth}
+myd <- data.frame(
+  counts = colSums(counts(dds)),
+  sample = colnames(dds))
+ggplot(myd, aes(x = sample,weight = counts, fill = sample)) +
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  theme_bw() + 
+  coord_flip()
+```

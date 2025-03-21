@@ -1,0 +1,20 @@
+Our design matrix:
+
+```{r experiment-matrix}
+# visualizedesign matrix
+design_definition <- ~ group
+
+model_matrix <- model.matrix(design_definition, data =  colData(dds))
+
+kable(model_matrix)
+```
+
+```{r assigning-design}
+design(dds) <- design_definition 
+```
+
+```{r selecting-contrasts}
+
+(contrasts <- c("group1_vs_group2", "group1_vs_group3", "group2_vs_group3"))
+
+```

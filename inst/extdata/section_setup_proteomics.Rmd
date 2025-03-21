@@ -1,0 +1,81 @@
+
+---
+title: "Proteomics"
+author: "Edoardo Filippi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    number_sections: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+# setup
+
+Prerequisites: having run first part for the current experiment name
+
+```{r params, eval = TRUE, include = TRUE}
+params <- list(
+  "workflow" = "summarized_experiment",
+  "count_matrix" = "/Users/edoardofilippi/Development/Projects/Proteomics/Data_preparation/count_matrix.xlsx",
+  "experiment_name" = "resuset_proteomics_gtl_adapt",
+  "experiment_metadata_file" = "/Users/edoardofilippi/Development/Projects/Proteomics/Data_preparation/experiement_metadata.xlsx",
+  "create_annotation_df" = FALSE,
+  "save_se" = FALSE,
+  "load_results_objects" = TRUE
+)
+```
+
+```{r setup, include=TRUE, cache=FALSE, eval = TRUE, echo = FALSE}
+library(knitr)
+opts_chunk$set(
+  fig.path = paste0("./figures/", purrr::pluck(params, "experiment_name", .default = FALSE)),
+  fig.align = 'center',
+  fig.show = 'asis',
+  eval = TRUE,
+  fig.width = 10,
+  fig.height = 7,
+  tidy = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE,
+  size = 'small',
+  comment = "##",
+  echo = TRUE,
+  results = 'markup',
+  dev = c("png", "pdf")
+)
+options(replace.assign = TRUE,
+        width = 80)
+```
+
+```{r loadLibraries,results='hide'}
+library("limma")
+library("edgeR")
+library("DT")
+library("EnhancedVolcano")
+library("openxlsx2")
+library("SummarizedExperiment")
+library("topGO")
+library("pcaExplorer")
+library("org.Mm.eg.db")
+```
+
+```{r load_functions, include = TRUE}
+# remotes::install_github("https://github.com/edo98811/helper-functions-rbioinfo.git")
+library("rbioinfoHelper")
+source("load_helper_functions.R")
+```
+
+# Loading Data
+
+```{r load_objects-merged}
+load_proteomics_data(params)
+setup_workspace(params)
+if (purrr::pluck(params, "create_annotation_df", .default = FALSE)) {
+  create_annotations_proteomics(rowData(se))
+}
+```

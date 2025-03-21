@@ -22,7 +22,7 @@
 #' }
 #'
 #' @export
-save_proteomics_data <- function(vdx, se, experiment_name, results_object = NULL) {
+save_proteomics_data <- function(vdx, se, experiment_name, params = list(), results_object = NULL) {
 
     # Create the directory if it doesn't exist
     dir_path <- file.path("Analyses_data", experiment_name)
@@ -69,7 +69,8 @@ save_proteomics_data <- function(vdx, se, experiment_name, results_object = NULL
 #' }
 #'
 #' @export
-load_proteomics_data <- function(experiment_name) {
+load_proteomics_data <- function(params) {
+    experiment_name <- params$experiment_name
     # Define the directory path
     dir_path <- file.path("Analyses_data", experiment_name)
     
@@ -94,7 +95,7 @@ load_proteomics_data <- function(experiment_name) {
     
     # Load the results_object from RDS if it exists
     results_path <- file.path(dir_path, "results_object.rds")
-    if (file.exists(results_path)) {
+    if (file.exists(results_path) && (purrr::pluck(params, "load_results_objects", .default = FALSE))) {
         results_object <- readRDS(results_path)
         assign("myresuSet", results_object, envir = , envir = parent.frame)
     } else {

@@ -1,0 +1,32 @@
+### contrast `r contrast`
+    
+```{r results='asis', echo = FALSE}
+    # https://federicomarini.github.io/GeneTonic/reference/get_aggrscores.html
+    enrich_res <- get_aggrscores(
+      shake_topGOtableResult(myresuSet[[contrast]]$topGO_tbl),
+      myresuSet[[contrast]]$res_DESeq,
+      annotation_obj = anno_df
+    )
+
+    # https://federicomarini.github.io/GeneTonic/reference/gs_scores.html
+    scores_mat <- gs_scores(
+      se = vst_data,
+      res_de = myresuSet[[contrast]]$res_DESeq,
+      res_enrich = enrich_res[enrich_res$gs_id %in% go_terms,],
+      annotation_obj = anno_df
+    )
+    
+    # lapply(strsplit(rownames(scores_mat),  split = "|", fixed = TRUE), unction(x) x[[2]])
+    # ordered_group <- c(4,5,11,12,13,1,2,3,6,7,8, 9,10,14,16, 15,17,18,19,20)
+
+    order = rownames(colData(dds)[order(colData(dds)$group, decreasing = FALSE),])
+    order_numbers <- match(order, rownames(colData(dds)))
+    # dds$group <- ordered(dds$group, levels = levels(dds$group))
+    # 
+    # dplyr::arrange(scores_mat, group)
+
+    gs_scoresheat(scores_mat[, order_numbers],
+                #gs_ids = go_terms,
+                cluster_cols = F,
+                cluster_rows = F)
+```
