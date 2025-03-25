@@ -7,7 +7,7 @@
 save_proteomics_data(
   vdx,
   se,
-  experiment_name,
+  analysis_name,
   params = list(),
   results_object = NULL
 )
@@ -17,7 +17,7 @@ save_proteomics_data(
 
 \item{se}{A data object to be saved as an RDS file.}
 
-\item{experiment_name}{A character string specifying the name of the experiment. This will be used to create a directory under "Analyses_data".}
+\item{analysis_name}{A character string specifying the name of the experiment. This will be used to create a directory under "Analyses_data".}
 
 \item{results_object}{An optional data object to be saved as an RDS file. Default is NULL.}
 }
@@ -28,7 +28,7 @@ This function does not return a value. It is called for its side effects of savi
 This function saves proteomics data objects to specified directories.
 }
 \details{
-The function creates a directory named after the \code{experiment_name} under "Analyses_data" if it does not already exist. It then saves the \code{vdx} and \code{se} objects as RDS files in this directory. If a \code{results_object} is provided, it is also saved as an RDS file in the same directory.
+The function creates a directory named after the \code{analysis_name} under "Analyses_data" if it does not already exist. It then saves the \code{vdx} and \code{se} objects as RDS files in this directory. If a \code{results_object} is provided, it is also saved as an RDS file in the same directory.
 }
 \examples{
 \dontrun{

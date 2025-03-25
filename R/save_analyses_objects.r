@@ -4,7 +4,7 @@
 #' the objects are saved in a directory named after the experiment within the `analyses_data` directory. 
 #' Otherwise, the objects are saved in the current working directory.
 #'
-#' @param params A list containing parameters for the analysis. Must include `experiment_name` if saving to a specific directory.
+#' @param params A list containing parameters for the analysis. Must include `analysis_name` if saving to a specific directory.
 #' @param myresuSet The main results set to be saved.
 #' @param dds The DESeq2 results object to be saved.
 #' @param dds_releveled Optional. A DESeq2 results object with releveled factors to be saved.
@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' params <- list(experiment_name = "experiment_1")
+#' params <- list(analysis_name = "experiment_1")
 #' save_analysis_objects(params, myresuSet, dds, dds_releveled, dds_interaction_term, gtl)
 #' }
 save_analysis_objects <- function(
@@ -27,22 +27,22 @@ save_analysis_objects <- function(
     dds_interaction_term = NULL, 
     gtl = NULL) {
 
-    if (is.character(params$experiment_name) & length(params$experiment_name)) {
-        dir.create(file.path("analyses_data", params$experiment_name), showWarnings = FALSE, recursive = TRUE)
-        saveRDS(myresuSet, file.path("analyses_data", params$experiment_name, "myResuSet.RDS"))
+    if (is.character(params$analysis_name) & length(params$analysis_name)) {
+        dir.create(file.path("analyses_data", params$analysis_name), showWarnings = FALSE, recursive = TRUE)
+        saveRDS(myresuSet, file.path("analyses_data", params$analysis_name, "myResuSet.RDS"))
         message("myResuSet saved successfully.")
-        saveRDS(dds, file.path("analyses_data", params$experiment_name, "dds_DE_results.RDS"))
+        saveRDS(dds, file.path("analyses_data", params$analysis_name, "dds_DE_results.RDS"))
         message("dds saved successfully.")
         if (!is.null(dds_releveled)) {
-            saveRDS(dds_releveled, file.path("analyses_data", params$experiment_name, "dds_DE_results_releveled.RDS"))
+            saveRDS(dds_releveled, file.path("analyses_data", params$analysis_name, "dds_DE_results_releveled.RDS"))
             message("dds_releveled saved successfully.")
         }
         if (!is.null(dds_interaction_term)) {
-            saveRDS(dds_interaction_term, file.path("analyses_data", params$experiment_name, "dds_DE_results_interaction_term.RDS"))
+            saveRDS(dds_interaction_term, file.path("analyses_data", params$analysis_name, "dds_DE_results_interaction_term.RDS"))
             message("dds_interaction_term saved successfully.")
         }
         if (!is.null(gtl)) {
-            saveRDS(gtl, file.path("analyses_data", params$experiment_name, "gtl.RDS"))
+            saveRDS(gtl, file.path("analyses_data", params$analysis_name, "gtl.RDS"))
             message("gtl saved successfully.")
         }
     } else {

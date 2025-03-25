@@ -7,7 +7,7 @@
 load_proteomics_data(params)
 }
 \arguments{
-\item{experiment_name}{A character string specifying the name of the experiment.}
+\item{analysis_name}{A character string specifying the name of the experiment.}
 }
 \value{
 This function does not return a value but loads the following objects into the parent environment:

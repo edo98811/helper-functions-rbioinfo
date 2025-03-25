@@ -17,18 +17,18 @@ How this works:
 
 With these Parameters you can control the analysis
 
-The workflow is supposed to be: run it once setting the filtering that you want and the contrasts that you need, the objects will be saved in the "experiment_name" sub-folder in the analysis results folder. When you want to run it again with the same parameters and, for example, create a report, you can set the load_dds_objects to true, they will be loaded and unnecessary operations skipped.
+The workflow is supposed to be: run it once setting the filtering that you want and the contrasts that you need, the objects will be saved in the "analysis_name" sub-folder in the analysis results folder. When you want to run it again with the same parameters and, for example, create a report, you can set the load_dds_objects to true, they will be loaded and unnecessary operations skipped.
 
 ```{r params, eval = TRUE}
 params <- list(
-  "filter_complete_dds" = FALSE,
-  "load_complete_dds" = FALSE,
-  "load_dds_objects" = TRUE,
-  "save_dds_objects" = FALSE,
-  "complete_dds_source" = "Analyses_data/Complete_dds/dds_at2_cleaned.RDS",
-  "experiment_name" = "explorative_data_analysis",
-  "experiment_metadata_file" = "samplesDesign_paul_AT2full.xlsx",
-  "create_annotation_df" = FALSE
+  "workflow" = "dds_gse",
+  "subset_gse" = TRUE,
+  "load_gse" = TRUE,
+  "load_dds_objects" = FALSE,
+  "save_dds_objects" = TRUE,
+  "analysis_name" = "",
+  "sample_metadata_file" = "",
+  "create_annotation_df" = TRUE
 )
 ```
 
@@ -38,13 +38,12 @@ This is the function to modify when you want to filter the object in a specific 
 All the subsequent analyses will be carried out starting from the samples present in this object.
 
 ```{r filtering-object, eval = TRUE, include = TRUE}
-filter_dds <- function(dds_to_filter) {
+subset_gse <- function(gse_to_subset) {
 
-  dds_to_filter <- dds_to_filter[, colData(dds_to_filter)$project_scenario == "kidney_ifn_1"]
+  # gse_to_subset <- gse_to_subset[, colData(gse_to_subset)$group != "WT"]
+  # gse_to_subset <- gse_to_subset[, colData(gse_to_subset)$group %in% c("WT", "KO")]
 
-  dds_to_filter <- dds_to_filter[, colData(dds_to_filter)$group %in% c(group_of_interest,"wt")]
-
-  return(dds_to_filter)
+  return(gse_to_subset)
 }
 ```
 
@@ -52,7 +51,7 @@ filter_dds <- function(dds_to_filter) {
 ```{r setup, include=FALSE, cache=FALSE, eval = TRUE, echo = FALSE}
 library(knitr)
 opts_chunk$set(
-  fig.path = paste0("./figures/", purrr::pluck(params, "experiment_name", .default = FALSE)),
+  fig.path = paste0("./figures/", purrr::pluck(params, "analysis_name", .default = FALSE)),
   fig.align = 'center',
   fig.show = 'asis',
   eval = TRUE,
@@ -84,11 +83,14 @@ library("org.Mm.eg.db")
 library("biomaRt")
 # library("clusterProfiler")
 library("topGO")
-# library("pcaExplorer")
+library("pcaExplorer")
 ```
 
 ```{r load_functions}
-source("load_helper_functions.r")
+# source("load_helper_functions.r")
+devtools::load_all("/Users/edoardofilippi/Development/Projects/helper-functions-rbioinfo/")
+# remotes::install_github("https://github.com/edo98811/helper-functions-rbioinfo.git@devel")
+library("rbioinfoHelper")
 ```
 
 # Importing files into R and preparing workspace
@@ -98,13 +100,19 @@ These variables will be created in the workspace:
 
 * anno_df
 * anns
-* complete_dds (if needed)
+* gse object (if needed)
 * experiment_metadata
 
 If anno_df and anns still need to be created they will not be loaded
 
 ```{r load-function}
 prepare_workspace(params)
+```
+
+Add metadata to the gse object
+
+```{r load-function}
+if (purrr::pluck(params, "load_gse", .default = FALSE)) colData(gse) <- S4Vectors::DataFrame(experiment_metadata)
 ```
 
 If loading parameter set to true load the already analyzed data necessary objects
@@ -114,18 +122,11 @@ if (purrr::pluck(params, "load_dds_objects", .default = FALSE))
   load_analyses(params)
 ```
 
-Filtering using the funciton defined precently 
+Subset using the funciton defined precently 
 
-```{r filter-complete_dds, eval = TRUE}
+```{r subset-complete_dds, eval = TRUE}
 if (
-  purrr::pluck(params, "filter_complete_dds", .default = FALSE) && 
-  !purrr::pluck(params, "load_dds_objects", .default = FALSE)
-  ) dds <- filter_dds(complete_dds) else if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)) dds <- complete_dds # (if needed)
-```
-
-# Gene annotation
-
-To create the gene annotation tables, only if first run. (se create_annotation_df = TRUE)
-```{r gene_annotation, eval = FALSE}
-if (purrr::pluck(params, "create_annotation_df", .default = FALSE)) create_annotations(dds)
+  purrr::pluck(params, "subset_gse", .default = FALSE) && 
+  purrr::pluck(params, "load_gse", .default = TRUE)
+  ) gse <- subset_gse(gse)
 ```

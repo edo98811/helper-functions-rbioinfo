@@ -34,20 +34,33 @@ create_annotations <- function(dds) {
 
 
 
-annotation_datasets <- function(dds){
+annotation_datasets <- function(dds, organism = "Human"){
 
   row_names <- rownames(as.data.frame(rowData(dds)))
   rownames(dds) <- gsub("\\.[0-9]*$", "", row_names)
 
-  anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Mm.eg.db", "ENSEMBL")
-  # anno df and anns hanno la stessa funzione
+  if (organism == "Human") {
 
-  mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl", host = "https://www.ensembl.org")
-  # "www" → Main server (https://www.ensembl.org)
-  # "useast" → US East (https://useast.ensembl.org)
-  # "uswest" → US West (https://uswest.ensembl.org)
-  # "asia" → Asia (https://asia.ensembl.org)
+    anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
+    # anno df and anns hanno la stessa funzione
 
+    mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl", host = "https://www.ensembl.org")
+    # "www" → Main server (https://www.ensembl.org)
+    # "useast" → US East (https://useast.ensembl.org)
+    # "uswest" → US West (https://uswest.ensembl.org)
+    # "asia" → Asia (https://asia.ensembl.org)
+  } else if (organism == "Mouse") {
+
+    anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Mm.eg.db", "ENSEMBL")
+    # anno df and anns hanno la stessa funzione
+
+    mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl", host = "https://www.ensembl.org")
+    # "www" → Main server (https://www.ensembl.org)
+    # "useast" → US East (https://useast.ensembl.org)
+    # "uswest" → US West (https://uswest.ensembl.org)
+    # "asia" → Asia (https://asia.ensembl.org)
+
+  } else { stop("Invalid organism") }
   # https://www.rdocumentation.org/packages/biomaRt/versions/2.28.0/topics/getBM
   anns <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "description"), 
                 filters = "ensembl_gene_id",

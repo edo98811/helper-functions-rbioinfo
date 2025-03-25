@@ -20,9 +20,9 @@ Prerequisites: having run first part for the current experiment name
 ```{r params, eval = TRUE, include = TRUE}
 params <- list(
   "workflow" = "summarized_experiment",
-  "count_matrix" = "/Users/edoardofilippi/Development/Projects/Proteomics/Data_preparation/count_matrix.xlsx",
-  "experiment_name" = "resuset_proteomics_gtl_adapt",
-  "experiment_metadata_file" = "/Users/edoardofilippi/Development/Projects/Proteomics/Data_preparation/experiement_metadata.xlsx",
+  "count_matrix" = "",
+  "analysis_name" = "",
+  "sample_metadata_file" = "",
   "create_annotation_df" = FALSE,
   "save_se" = FALSE,
   "load_results_objects" = TRUE
@@ -32,7 +32,7 @@ params <- list(
 ```{r setup, include=TRUE, cache=FALSE, eval = TRUE, echo = FALSE}
 library(knitr)
 opts_chunk$set(
-  fig.path = paste0("./figures/", purrr::pluck(params, "experiment_name", .default = FALSE)),
+  fig.path = paste0("./figures/", purrr::pluck(params, "analysis_name", .default = FALSE)),
   fig.align = 'center',
   fig.show = 'asis',
   eval = TRUE,
@@ -74,7 +74,8 @@ source("load_helper_functions.R")
 
 ```{r load_objects-merged}
 load_proteomics_data(params)
-setup_workspace(params)
+prepare_workspace_proteomics(params)
+
 if (purrr::pluck(params, "create_annotation_df", .default = FALSE)) {
   create_annotations_proteomics(rowData(se))
 }

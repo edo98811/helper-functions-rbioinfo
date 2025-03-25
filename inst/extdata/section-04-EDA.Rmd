@@ -2,8 +2,11 @@
 
 Let's take a look at the experiment details:
 
-```{r prepare-dds, echo = FALSE}
+```{r factor-columns, echo = FALSE}
 factor_columns <- c("group")
+```
+
+```{r prepare-dds, echo = FALSE}
 for (col in factor_columns) {
   colData(dds)[[col]] <- droplevels(factor(colData(dds)[[col]])) 
 }

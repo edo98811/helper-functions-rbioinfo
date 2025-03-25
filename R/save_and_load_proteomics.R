@@ -4,11 +4,11 @@
 #'
 #' @param vdx A data object to be saved as an RDS file.
 #' @param se A data object to be saved as an RDS file.
-#' @param experiment_name A character string specifying the name of the experiment. This will be used to create a directory under "Analyses_data".
+#' @param analysis_name A character string specifying the name of the experiment. This will be used to create a directory under "Analyses_data".
 #' @param results_object An optional data object to be saved as an RDS file. Default is NULL.
 #'
 #' @details
-#' The function creates a directory named after the `experiment_name` under "Analyses_data" if it does not already exist. It then saves the `vdx` and `se` objects as RDS files in this directory. If a `results_object` is provided, it is also saved as an RDS file in the same directory.
+#' The function creates a directory named after the `analysis_name` under "Analyses_data" if it does not already exist. It then saves the `vdx` and `se` objects as RDS files in this directory. If a `results_object` is provided, it is also saved as an RDS file in the same directory.
 #'
 #' @return
 #' This function does not return a value. It is called for its side effects of saving data to disk.
@@ -22,10 +22,10 @@
 #' }
 #'
 #' @export
-save_proteomics_data <- function(vdx, se, experiment_name, params = list(), results_object = NULL) {
+save_proteomics_data <- function(vdx, se, analysis_name, params = list(), results_object = NULL) {
 
     # Create the directory if it doesn't exist
-    dir_path <- file.path("Analyses_data", experiment_name)
+    dir_path <- file.path("Analyses_data", analysis_name)
     if (!dir.exists(dir_path)) {
         dir.create(dir_path, recursive = TRUE)
     }
@@ -49,7 +49,7 @@ save_proteomics_data <- function(vdx, se, experiment_name, params = list(), resu
 #'
 #' This function loads proteomics data for a given experiment from specified RDS files.
 #'
-#' @param experiment_name A character string specifying the name of the experiment.
+#' @param analysis_name A character string specifying the name of the experiment.
 #'
 #' @return This function does not return a value but loads the following objects into the parent environment:
 #' \itemize{
@@ -70,9 +70,10 @@ save_proteomics_data <- function(vdx, se, experiment_name, params = list(), resu
 #'
 #' @export
 load_proteomics_data <- function(params) {
-    experiment_name <- params$experiment_name
+    
+    analysis_name <- params$analysis_name
     # Define the directory path
-    dir_path <- file.path("Analyses_data", experiment_name)
+    dir_path <- file.path("Analyses_data", analysis_name)
     
     # Check if the directory exists
     if (!dir.exists(dir_path)) {

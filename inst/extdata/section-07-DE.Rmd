@@ -17,10 +17,8 @@ if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)){
   # de analysis
   dds <- DESeq(dds)
 
-  # relevel
-  # dds$group <- relevel(dds$group, ref = "lupus_ATII")
   dds_releveled <- dds
-  dds_releveled$group <- relevel(dds_releveled$group, "AT2")
+  dds_releveled$group <- relevel(dds_releveled$group, "")
   dds_releveled <- nbinomWaldTest(dds_releveled)
 }
 ```

@@ -25,8 +25,8 @@ The `params` list contains the following elements:
 * `load_dds_objects`: Logical, whether to load DDS objects (default is TRUE).
 * `save_dds_objects`: Logical, whether to save DDS objects (default is FALSE).
 * `complete_dds_source`: Path to the complete DDS source file.
-* `experiment_name`: Name of the experiment.
-* `experiment_metadata_file`: Path to the experiment metadata file (xlsx format).
+* `analysis_name`: Name of the experiment.
+* `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
 * `create_annotation_df`: Logical, whether to create annotation data frames (default is FALSE).
 * `workflow`: A character string specifying the workflow to use (default is "dds"). if working only with SummarizedExperiment write summarized_experiment
 
@@ -55,7 +55,7 @@ The `params` list contains the following elements:
 `load_analyses()`: Loads previously saved analysis results.
 
 * `params`: A list containing the following elements:
-    - `experiment_metadata_file`: Path to the experiment metadata file (xlsx format).
+    - `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
     - `load_gse`: Logical, whether to load the GSE object (default is FALSE).
     - `load_complete_dds`: Logical, whether to load the complete DDS object (default is FALSE).
     - `complete_dds_source`: Path to the complete DDS source file.
@@ -65,13 +65,13 @@ The `params` list contains the following elements:
 `prepare_workspace()`: Sets up the R environment for analysis, including loading necessary libraries and data.
 
 * `params`: A list containing the following elements:
-    - `experiment_metadata_file`: Path to the experiment metadata file (xlsx format).
+    - `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
     - `load_gse`: Logical, whether to load the GSE object (default is FALSE).
     - `load_complete_dds`: Logical, whether to load the complete DDS object (default is FALSE).
     - `complete_dds_source`: Path to the complete DDS source file.
 
 * `params`:(to work not with dds) A list containing the following elements:
-    - `experiment_metadata_file`: Path to the experiment metadata file (xlsx format).
+    - `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
     - `workflow`: A character string specifying the workflow to use (needs to be "summarized_experiment").
 
 `save_se_arrow()`: Loads DDS objects using the Arrow package for efficient data handling. (to implement)

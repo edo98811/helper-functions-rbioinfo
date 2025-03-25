@@ -4,11 +4,13 @@
 \alias{create_report}
 \title{Merge Multiple R Markdown Files into One}
 \usage{
-create_report(output_filename)
+create_report(output_filename, type = "dds_gse")
 }
 \arguments{
 \item{output_filename}{A character string specifying the name of the merged output \code{.Rmd} file.
 If no \code{.Rmd} extension is provided, it will be added automatically.}
+
+\item{type}{A character string specifying the type of report to create}
 }
 \value{
 A message indicating the merged file has been created.

@@ -4,7 +4,7 @@
 #'
 #' @param params A list containing the following elements:
 #'   \itemize{
-#'     \item \code{experiment_metadata_file}: Path to the experiment metadata file (xlsx format).
+#'     \item \code{sample_metadata_file}: Path to the experiment metadata file (xlsx format).
 #'     \item \code{load_gse}: Logical, whether to load the GSE object (default is FALSE).
 #'     \item \code{load_complete_dds}: Logical, whether to load the complete DDS object (default is FALSE).
 #'     \item \code{complete_dds_source}: Path to the complete DDS source file.
@@ -24,7 +24,7 @@
 #' @examples
 #' \dontrun{
 #' params <- list(
-#'   experiment_metadata_file = "path/to/metadata.xlsx",
+#'   sample_metadata_file = "path/to/metadata.xlsx",
 #'   load_gse = TRUE,
 #'   load_complete_dds = TRUE,
 #'   complete_dds_source = "path/to/complete_dds.RDS"
@@ -35,11 +35,11 @@
 #' @importFrom readxl read_xlsx
 #' @importFrom purrr pluck
 #' 
-prepare_workspace <- function(params) {
-  if (purrr:pukk(params, "workflow", .default = "DESeq2") == "DESeq2") {
+prepare_workspace_proteomics <- function(params) {
+  if (purrr:plukk(params, "workflow", .default = "DESeq2") == "DESeq2") {
       
       tryCatch({
-        experiment_metadata <- readxl::read_xlsx(params$experiment_metadata_file, col_names = TRUE)
+        experiment_metadata <- readxl::read_xlsx(params$sample_metadata_file, col_names = TRUE)
         assign("experiment_metadata", experiment_metadata, envir = parent.frame())
         message("experiment metadata loaded and saved in the workspace as dataframe with name 'experiment_metadata'")
       }, error = function(e) {
@@ -49,7 +49,7 @@ prepare_workspace <- function(params) {
   } else if (purrr::pluck(params, "workflow", .default = "DESeq2") == "summarized_experiment") {
 
     tryCatch({
-    experiment_metadata <- readxl::read_xlsx(params$experiment_metadata_file, col_names = TRUE)
+    experiment_metadata <- readxl::read_xlsx(params$sample_metadata_file, col_names = TRUE)
     assign("experiment_metadata", experiment_metadata, envir = parent.frame())
     message("experiment metadata loaded and saved in the workspace as dataframe with name 'experiment_metadata'")
     }, error = function(e) {
