@@ -6,7 +6,7 @@ Let's check the number of assigned reads per sample as a proxy of the sequencing
 ```{r dds-from-gse}
 if (!purrr::pluck(params, "load_dds_objects", .default = FALSE) && 
     purrr::pluck(params, "load_gse", .default = TRUE)) {
-  (dds <- DESeq2::DESeqDataSet(gse, design = design))
+  (dds <- DESeq2::DESeqDataSet(gse, design = design_definition))
  } else {
   warning("No dds object created from gse, this may cause problems in the workflow, ignore if it was done with intention")
 }

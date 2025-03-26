@@ -37,7 +37,7 @@ params <- list(
 This is the function to modify when you want to filter the object in a specific way before beginning. 
 All the subsequent analyses will be carried out starting from the samples present in this object.
 
-```{r filtering-object, eval = TRUE, include = TRUE}
+```{r subsetting-object, eval = TRUE, include = TRUE}
 subset_dds <- function(dds_to_subset) {
 
   # dds_to_subset <- dds_to_subset[, colData(dds_to_subset)$group != "WT"]
@@ -86,7 +86,7 @@ library("topGO")
 library("pcaExplorer")
 ```
 
-```{r load_functions}
+```{r load-functions}
 # source("load_helper_functions.r")
 devtools::load_all("/Users/edoardofilippi/Development/Projects/helper-functions-rbioinfo/")
 # remotes::install_github("https://github.com/edo98811/helper-functions-rbioinfo.git@devel")

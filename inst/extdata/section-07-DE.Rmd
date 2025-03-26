@@ -1,6 +1,4 @@
 
-
-
 # DE - Differential Expression
 
 ## DE Analysis
@@ -12,22 +10,22 @@ We need to prepare the dds objects in order to be sure we obtain the wished cont
 if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)){
 
   # releveling
-  dds$group <- relevel(dds$group, "ctrl")
+  dds$group <- relevel(dds[[factor_columns[[1]]]], "ctrl")
 
   # de analysis
   dds <- DESeq(dds)
 
-  dds_releveled <- dds
-  dds_releveled$group <- relevel(dds_releveled$group, "")
-  dds_releveled <- nbinomWaldTest(dds_releveled)
+  # dds_releveled <- dds
+  # dds_releveled$group <- relevel(dds_releveled$group, "")
+  # dds_releveled <- nbinomWaldTest(dds_releveled)
 }
 ```
 
 ```{r contrasts}
 # contrasts
-(contrasts <- resultsNames(dds))
+(contrasts_main <- resultsNames(dds))
 ```
-```{r contrasts-releveled}
+```{r contrasts-releveled, eval = FALSE, include = FALSE}
 # contrasts
 (contrasts_releveled <- resultsNames(dds_releveled))
 ```
@@ -51,26 +49,54 @@ You can select for which contrasts to see the DE results, to do this you can cop
 
 <summary>click here to display DE results of </summary> -->
 
-```{r, echo = FALSE,include = FALSE}
+```{r initialize-de-tables, echo = FALSE,include = FALSE}
 # You need this code to conduct the magic dependences attaching...
 DT::datatable(matrix())
 ```
 
 
-```{r, results = 'asis', echo = FALSE}
+```{r de-tables, results = 'asis', echo = FALSE}
 
-for (contrast in ontrasts) {
+for (contrast in contrasts) {
 
-  if (grepl("AT2$", contrast)) dds_to_use <- dds_releveled else dds_to_use <- dds # If you use a releveled object you cchange this line
-
-  if (!purrr::pluck(params, "load_dds_objects", .default = FALSE))
+  dds_to_use <- dds
+  # if (grepl("", contrast)) dds_to_use <- dds_releveled else dds_to_use <- dds # If you use a releveled object you cchange this line
+ 
+ if (!purrr::pluck(params, "load_dds_objects", .default = FALSE))
     myresuSet <- alltheresults(
       myresuSet, dds_to_use,
       contrast = c(contrast), FDR = FDR,
-      anno_df = anno_df, anns = anns, species = "Mus_musculus")
-  # myresuSet[[contrast]]$maplot_res
-    cat(knitr::knit_print(DT::datatable(myresuSet[[contrast]]$etbl_res_DE, escape = FALSE, rownames = FALSE, 
-        caption = htmltools::tags$caption(style = 'caption-side: top; color:black;; font-size: 2em', contrast))))
+      anno_df = anno_df, anns = anns, species = purrr::pluck(params, "species", .default = "Mm")
+    # myresuSet[[contrast]]$maplot_res
+    if (is.null(myresuSet[[contrast]]$etbl_res_DE)) {
+      cat(paste0("No differentially expressed genes found for contrast ", contrast, ". Consider increasing the FDR threshold."))
+    } else {
+      cat(knitr::knit_print(DT::datatable(myresuSet[[contrast]]$etbl_res_DE, escape = FALSE, rownames = FALSE, 
+          caption = htmltools::tags$caption(style = 'caption-side: top; color:black;; font-size: 2em', contrast))))
+    }
+}
+rm(dds_to_use)
+```
+
+```{r de-tables-no-report, results = 'asis', echo = FALSE, eval = FALSE, include = FALSE}
+# Run this if you are not generating a report
+for (contrast in contrasts) {
+
+  dds_to_use <- dds
+  # if (grepl("", contrast)) dds_to_use <- dds_releveled else dds_to_use <- dds # If you use a releveled object you cchange this line
+ 
+ if (!purrr::pluck(params, "load_dds_objects", .default = FALSE))
+    myresuSet <- alltheresults(
+      myresuSet, dds_to_use,
+      contrast = c(contrast), FDR = FDR,
+      anno_df = anno_df, anns = anns, species = purrr::pluck(params, "species", .default = "Mm")
+    # myresuSet[[contrast]]$maplot_res
+    if (is.null(myresuSet[[contrast]]$etbl_res_DE)) {
+      cat(paste0("No differentially expressed genes found for contrast ", contrast, ". Consider increasing the FDR threshold."))
+    } else {
+      print(DT::datatable(myresuSet[[contrast]]$etbl_res_DE, escape = FALSE, rownames = FALSE, 
+          caption = htmltools::tags$caption(style = 'caption-side: top; color:black;; font-size: 2em', contrast)))
+    }
 }
 rm(dds_to_use)
 ```

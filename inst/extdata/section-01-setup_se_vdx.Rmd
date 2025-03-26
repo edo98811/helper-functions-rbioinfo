@@ -64,7 +64,7 @@ library("pcaExplorer")
 library("org.Mm.eg.db")
 ```
 
-```{r load_functions, include = TRUE}
+```{r load-functions, include = TRUE}
 # remotes::install_github("https://github.com/edo98811/helper-functions-rbioinfo.git")
 library("rbioinfoHelper")
 source("load_helper_functions.R")

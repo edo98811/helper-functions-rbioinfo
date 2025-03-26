@@ -60,19 +60,21 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
   
   message("Extracting tables...")
   resuSet[[id_contrast]][["tbl_res_all"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]])
-  resuSet[[id_contrast]][["tbl_res_all"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anno_df$gene_id)]
-  resuSet[[id_contrast]][["tbl_res_all"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_all"]]$id, anns$ensembl_gene_id)]
+  resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id <- gsub("\\.[0-9]*$", "", resuSet[[id_contrast]][["tbl_res_all"]]$id)
+  resuSet[[id_contrast]][["tbl_res_all"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_all"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anns$ensembl_gene_id)]
   
   message("Extracting DEtables...")
   resuSet[[id_contrast]][["tbl_res_DE"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]],FDR = FDR)
-  resuSet[[id_contrast]][["tbl_res_DE"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anno_df$gene_id)]
-  resuSet[[id_contrast]][["tbl_res_DE"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
-  resuSet[[id_contrast]][["tbl_res_DE"]]$chromosome_name <- anns$chromosome_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$id, anns$ensembl_gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id <- gsub("\\.[0-9]*$", "", resuSet[[id_contrast]][["tbl_res_DE"]]$id)
+  resuSet[[id_contrast]][["tbl_res_DE"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anns$ensembl_gene_id)]
+  # resuSet[[id_contrast]][["tbl_res_DE"]]$chromosome_name <- anns$chromosome_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anns$ensembl_gene_id)]
   
   if(nrow(resuSet[[id_contrast]][["tbl_res_DE"]]) > 0) {
     message("Generating interactive DEtable...")
     resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
-    resuSet[[id_contrast]][["etbl_res_DE"]]$id <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$id, species = species)
+    resuSet[[id_contrast]][["etbl_res_DE"]]$ensembl_gene_id <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$ensembl_gene_id, species = species)
     resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol)
   }
   
