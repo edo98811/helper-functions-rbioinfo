@@ -1,0 +1,67 @@
+# Enrichment
+
+## Analysis with topGO
+```{r setup-enrichment}
+expressed_ensembl_id <- rowData(dds)[(rowSums(assay(dds))>0),"ensembl_gene_id"]
+expressed_gene_symbol <- anno_df$gene_name[match(expressed_ensembl_id, anno_df$gene_id)]
+```
+
+```{r enrichment, eval = TRUE, echo = FALSE}
+mapping <- ifelse(purrr::pluck(params, "species", .default = "Mm") == "Mm", "org.Mm.eg.db", "org.Hs.eg.db")
+
+# enrichment with topGO
+if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)) {
+  for (i in names(myresuSet)) {
+    if (nrow(myresuSet[[i]][["tbl_res_DE"]]) > 0) {
+      myresuSet[[i]][["topGO_tbl"]] <- 
+        topGOtable(DEgenes = myresuSet[[i]][["tbl_res_DE"]]$geneSymbol, 
+                  BGgenes = expressed_gene_symbol, 
+                  ontology = "BP",
+                  geneID = "symbol",
+                  addGeneToTerms = TRUE, 
+                  topTablerows = 500,
+                  mapping = mapping)
+    }
+  }
+}
+```
+
+## contrasts
+```{r, echo = FALSE,include = FALSE}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
+```{r enrichment-tables, eval = TRUE, echo = FALSE, results = 'asis'}
+# Note: this will not work if you are not generating a report, run the following block to obtain the same result in rStudio
+for (contrast in contrasts){
+  cat(
+    knitr::knit_print(
+      DT::datatable(
+        myresuSet[[contrast]]$topGO_tbl, 
+        escape = FALSE, 
+        rownames = TRUE, 
+        caption = htmltools::tags$caption(style = 'caption-side: top; color:black; font-size: 2em', paste0("Enrichment ", contrast)
+        )
+      )
+    )
+  )
+}
+```
+
+
+```{r enrichment-tables-no-report, eval = FALSE, echo = FALSE, results = 'asis'}
+# Run this if you are not generating a report
+
+for (contrast in contrasts){
+  print(
+    DT::datatable(
+      myresuSet[[contrast]]$topGO_tbl, 
+      escape = FALSE, 
+      rownames = TRUE, 
+      caption = htmltools::tags$caption(style = 'caption-side: top; color:black; font-size: 2em', paste0("Enrichment ", contrast)
+      )
+    )
+  )
+}
+```

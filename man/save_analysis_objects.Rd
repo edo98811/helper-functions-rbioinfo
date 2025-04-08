@@ -14,7 +14,7 @@ save_analysis_objects(
 )
 }
 \arguments{
-\item{params}{A list containing parameters for the analysis. Must include \code{experiment_name} if saving to a specific directory.}
+\item{params}{A list containing parameters for the analysis. Must include \code{analysis_name} if saving to a specific directory.}
 
 \item{myresuSet}{The main results set to be saved.}
 
@@ -36,7 +36,7 @@ Otherwise, the objects are saved in the current working directory.
 }
 \examples{
 \dontrun{
-params <- list(experiment_name = "experiment_1")
+params <- list(analysis_name = "experiment_1")
 save_analysis_objects(params, myresuSet, dds, dds_releveled, dds_interaction_term, gtl)
 }
 }

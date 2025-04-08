@@ -1,0 +1,12 @@
+# Save 
+
+```{r save, eval=TRUE}
+if (purrr::pluck(params, "save_dds_objects", .default = FALSE))
+  save_analysis_objects(
+      params, 
+      myresuSet, 
+      dds,
+      # dds_releveled = dds_releveled, 
+      # dds_interaction_term = dds_interaction_term
+      )
+```

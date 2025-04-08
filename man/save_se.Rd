@@ -9,7 +9,7 @@ save_se(se, params)
 \arguments{
 \item{se}{A SummarizedExperiment object to be saved.}
 
-\item{params}{A list of parameters, which should include an element named "experiment_name"
+\item{params}{A list of parameters, which should include an element named "analysis_name"
 that specifies the name of the experiment. This name will be used to construct
 the file path where the SE object will be saved.}
 }
@@ -22,7 +22,7 @@ This function saves a SummarizedExperiment (SE) object to a specified file path.
 \examples{
 \dontrun{
 se <- SummarizedExperiment::SummarizedExperiment()
-params <- list(experiment_name = "my_experiment")
+params <- list(analysis_name = "my_experiment")
 save_se(se, params)
 }
 

@@ -55,6 +55,9 @@ annotation_datasets_proteomics <- function(features_rowdata){
 
   anns <- anns[match(features_rowdata$proteinID, anns$uniprotswissprot), ]
 
+  anns <- anns[, c("uniprotswissprot", "mgi_symbol", "ensembl_gene_id", "description")]
+  colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
+
   return(list(
     anno_df = anns)
   )
