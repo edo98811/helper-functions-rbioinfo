@@ -60,6 +60,10 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
     resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
     resuSet[[id_contrast]][["etbl_res_DE"]]$id <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$id, species = species)
     resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol)
+
+    num_cols <- sapply(resuSet[[id_contrast]][["etbl_res_DE"]], is.numeric)
+    resuSet[[id_contrast]][["etbl_res_DE"]][, num_cols] <- lapply(resuSet[[id_contrast]][["etbl_res_DE"]][, num_cols], round, 4)
+
   }
   
   mybuttons <- c('copy', 'csv', 'excel', 'pdf', 'print')
