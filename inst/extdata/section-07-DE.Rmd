@@ -62,18 +62,28 @@ for (contrast in contrasts) {
   dds_to_use <- dds
   # if (grepl("", contrast)) dds_to_use <- dds_releveled else dds_to_use <- dds # If you use a releveled object you cchange this line
  
- if (!purrr::pluck(params, "load_dds_objects", .default = FALSE))
+ 
+  if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)) {
     myresuSet <- alltheresults(
       myresuSet, dds_to_use,
       contrast = c(contrast), FDR = FDR,
       anno_df = anno_df, anns = anns, species = purrr::pluck(params, "species", .default = "Mm")
-    # myresuSet[[contrast]]$maplot_res
+    )
+    
     if (is.null(myresuSet[[contrast]]$etbl_res_DE)) {
       cat(paste0("No differentially expressed genes found for contrast ", contrast, ". Consider increasing the FDR threshold."))
     } else {
-      cat(knitr::knit_print(DT::datatable(myresuSet[[contrast]]$etbl_res_DE, escape = FALSE, rownames = FALSE, 
-          caption = htmltools::tags$caption(style = 'caption-side: top; color:black;; font-size: 2em', contrast))))
+      cat(knitr::knit_print(DT::datatable(
+        myresuSet[[contrast]]$etbl_res_DE,
+        escape = FALSE,
+        rownames = FALSE,
+        caption = htmltools::tags$caption(
+          style = 'caption-side: top; color:black;; font-size: 2em',
+          contrast
+        )
+      )))
     }
+  }
 }
 rm(dds_to_use)
 ```

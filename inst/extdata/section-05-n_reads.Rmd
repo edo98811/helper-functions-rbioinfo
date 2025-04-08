@@ -7,11 +7,12 @@ Let's check the number of assigned reads per sample as a proxy of the sequencing
 myd <- data.frame(
   counts = colSums(counts(dds)),
   sample = colnames(dds))
-ggplot(myd, aes(x = sample,weight = counts, fill = sample)) +
+ggplot(myd, aes(x = sample, weight = counts, fill = sample)) +
   geom_bar() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
   theme_bw() + 
-  coord_flip()
+  coord_flip() + 
+  theme(legend.position = "none")
 ```
 
 If needed delete the not expressed genes from the dds object
