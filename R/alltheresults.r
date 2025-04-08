@@ -49,7 +49,7 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
   resuSet[[id_contrast]][["res_DESeq"]] <- results(dds_obj,name = mycoef, alpha = FDR)
   message("Performing LFC shrinkage...")
   resuSet[[id_contrast]][["res_DESeq"]] <- lfcShrink(dds_obj,coef = mycoef,res = resuSet[[id_contrast]][["res_DESeq"]], type = "apeglm") 
-  resuSet[[id_contrast]][["res_DESeq"]]$SYMBOL <- anno_df$gene_name[match(rownames(resuSet[[id_contrast]][["res_DESeq"]]), anno_df$gene_id)]
+  resuSet[[id_contrast]][["res_DESeq"]]$gene_name <- anno_df$gene_name[match(rownames(resuSet[[id_contrast]][["res_DESeq"]]), anno_df$gene_id)]
   
   message("Summary MAplot...")
   summary(resuSet[[id_contrast]][["res_DESeq"]])
@@ -61,13 +61,13 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
   message("Extracting tables...")
   resuSet[[id_contrast]][["tbl_res_all"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]])
   resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id <- gsub("\\.[0-9]*$", "", resuSet[[id_contrast]][["tbl_res_all"]]$id)
-  resuSet[[id_contrast]][["tbl_res_all"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_all"]]$gene_name <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anno_df$gene_id)]
   resuSet[[id_contrast]][["tbl_res_all"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anns$ensembl_gene_id)]
   
   message("Extracting DEtables...")
   resuSet[[id_contrast]][["tbl_res_DE"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]],FDR = FDR)
   resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id <- gsub("\\.[0-9]*$", "", resuSet[[id_contrast]][["tbl_res_DE"]]$id)
-  resuSet[[id_contrast]][["tbl_res_DE"]]$geneSymbol <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$gene_name <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anno_df$gene_id)]
   resuSet[[id_contrast]][["tbl_res_DE"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anns$ensembl_gene_id)]
   # resuSet[[id_contrast]][["tbl_res_DE"]]$chromosome_name <- anns$chromosome_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anns$ensembl_gene_id)]
   
@@ -75,7 +75,7 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
     message("Generating interactive DEtable...")
     resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
     resuSet[[id_contrast]][["etbl_res_DE"]]$ensembl_gene_id <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$ensembl_gene_id, species = species)
-    resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$geneSymbol)
+    resuSet[[id_contrast]][["etbl_res_DE"]]$gene_name <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$gene_name)
   }
   
   mybuttons <- c('copy', 'csv', 'excel', 'pdf', 'print')

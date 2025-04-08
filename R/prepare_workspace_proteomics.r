@@ -35,6 +35,7 @@
 #' @importFrom readxl read_xlsx
 #' @importFrom purrr pluck
 #' 
+#' @export
 prepare_workspace_proteomics <- function(params) {
   if (purrr:plukk(params, "workflow", .default = "DESeq2") == "DESeq2") {
       

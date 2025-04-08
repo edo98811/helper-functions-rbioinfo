@@ -35,6 +35,7 @@
 #' @importFrom readxl read_xlsx
 #' @importFrom purrr pluck
 #' 
+#' @export
 prepare_workspace <- function(params) {
     if (purrr::pluck(params, "workflow", .default = "dds_gse") == "dds_gse") { 
 
