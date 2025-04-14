@@ -1,6 +1,6 @@
 # Introduction
 
-This is a package used to create reports, 
+This is a package used to create reports
 
 # Installation 
 
