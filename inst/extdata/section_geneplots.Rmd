@@ -18,7 +18,7 @@ for (gene in genes) {
   if (gene %in% rowData(dds)$SYMBOL)
     gene_ensemblID <- as.data.frame(rowData(dds)) |> dplyr::filter(SYMBOL == gene) |> rownames()
   else {
-    message("Gene not found in the dataset.")
+    cat("Gene not found in the dataset.")
     next
   }
 
