@@ -19,17 +19,17 @@ create_annotations <- function(dds) {
   if (!inherits(dds, "DESeqDataSet")) stop("dds object is not of class 'DDSdataset'. Please provide a valid dds object.")
 
   anns_path <- file.path("analyses_data", "anns.RDS")
-  anno_df_path <- file.path("analyses_data", "anno_df.RDS")
+  anno_df_path <- file.path("analyses_data", "anns.RDS")
 
   annotations <- annotation_datasets(dds)
   anns <- annotations$anns
-  anno_df <- annotations$anno_df
+  anns <- annotations$anns
   saveRDS(anns, anns_path)
-  saveRDS(anno_df, anno_df_path)
+  saveRDS(anns, anno_df_path)
   remove(annotations)
 
   assign("anns", anns, envir = parent.frame())
-  assign("anno_df", anno_df, envir = parent.frame())
+  assign("anns", anns, envir = parent.frame())
 }
 
 
@@ -41,7 +41,7 @@ annotation_datasets <- function(dds, organism = "Human"){
 
   if (organism == "Human") {
 
-    anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
+    anns <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
     # anno df and anns hanno la stessa funzione
 
     mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl", host = "https://www.ensembl.org")
@@ -51,7 +51,7 @@ annotation_datasets <- function(dds, organism = "Human"){
     # "asia" → Asia (https://asia.ensembl.org)
   } else if (organism == "Mouse") {
 
-    anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Mm.eg.db", "ENSEMBL")
+    anns <- pcaExplorer::get_annotation_orgdb(dds, "org.Mm.eg.db", "ENSEMBL")
     # anno df and anns hanno la stessa funzione
 
     mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl", host = "https://www.ensembl.org")
@@ -72,6 +72,6 @@ annotation_datasets <- function(dds, organism = "Human"){
 
   return(list(
     anns = anns, 
-    # anno_df = anno_df)
+    # anns = anns)
   )
 }

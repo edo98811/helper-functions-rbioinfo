@@ -7,7 +7,7 @@
 #' @param fitted_limma_model The fitted Limma model object.
 #' @param contrast A character vector specifying the contrast of interest.
 #' @param FDR A numeric value specifying the false discovery rate threshold.
-#' @param anno_df A data frame containing annotation information with columns for gene symbols, Ensembl gene IDs, and UniProt IDs.
+#' @param anns A data frame containing annotation information with columns for gene symbols, Ensembl gene IDs, and UniProt IDs.
 #' @param species A character string specifying the species (default is "mus_musculus").
 #'
 #' @return A list containing the extracted and annotated results, including interactive tables.
@@ -28,12 +28,12 @@
 #' fitted_limma_model <- lmFit(...)
 #' contrast <- c("condition1", "condition2")
 #' FDR <- 0.05
-#' anno_df <- data.frame(...)
-#' results <- alltheresults_limma(resuSet, fitted_limma_model, contrast, FDR, anno_df)
+#' anns <- data.frame(...)
+#' results <- alltheresults_limma(resuSet, fitted_limma_model, contrast, FDR, anns)
 #' }
 #'
 #' @export
-alltheresults_limma <- function(resuSet, fitted_limma_model, contrast, FDR, anno_df, species = "mus_musculus") {
+alltheresults_limma <- function(resuSet, fitted_limma_model, contrast, FDR, anns, species = "mus_musculus") {
 
     # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
     id_contrast <- contrast
@@ -45,13 +45,13 @@ alltheresults_limma <- function(resuSet, fitted_limma_model, contrast, FDR, anno
     resuSet[[id_contrast]][["fitted_model"]] <- fitted_limma_model
 
     message("Extracting tables...")
-    resuSet[[id_contrast]][["tbl_res_all"]] <- add_gene_info(topTable(fit2, coef=contrast, adjust="fdr", number=Inf, confint = TRUE), anno_df)
+    resuSet[[id_contrast]][["tbl_res_all"]] <- add_gene_info(topTable(fit2, coef=contrast, adjust="fdr", number=Inf, confint = TRUE), anns)
 
     message("Extracting DEtables...")
     resuSet[[id_contrast]][["tbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_all"]][resuSet[[id_contrast]][["tbl_res_all"]]$adj.P.Val < FDR, ]
     
     message("Extracting DEtables ensembl_gene_id...")
-    resuSet[[id_contrast]][["tbl_res_DE_genes"]] <- results_to_gene_id(resuSet[[id_contrast]][["tbl_res_DE"]], anno_df)
+    resuSet[[id_contrast]][["tbl_res_DE_genes"]] <- results_to_gene_id(resuSet[[id_contrast]][["tbl_res_DE"]], anns)
     
     if(nrow(resuSet[[id_contrast]][["tbl_res_DE"]]) > 0) {
       message("Generating interactive DEtable...")
@@ -94,15 +94,15 @@ createLinkGeneSymbol <- function(val) {
   paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=',val,'[sym]" target="_blank" class="btn btn-primary">',val,'</a>')
 }
 
-# add_gene_info <- function(results_table, anno_df) {
+# add_gene_info <- function(results_table, anns) {
 
 #     if (!"uniprot_id" %in% colnames(results_table)) {
 #         results_table$uniprot_id <- rownames(results_table)
 #     }  
     
-#     results_table$gene_symbol <- anno_df[match(results_table$uniprot_id, anno_df$unprot_id), "gene_symbol"]
-#     results_table$ensembl_gene_id <- anno_df[match(results_table$uniprot_id, anno_df$unprot_id), "ensembl_gene_id"]
-#     results_table$uniprot_id <- anno_df[match(results_table$uniprot_id, anno_df$unprot_id), "unprot_id"]
+#     results_table$gene_symbol <- anns[match(results_table$uniprot_id, anns$unprot_id), "gene_symbol"]
+#     results_table$ensembl_gene_id <- anns[match(results_table$uniprot_id, anns$unprot_id), "ensembl_gene_id"]
+#     results_table$uniprot_id <- anns[match(results_table$uniprot_id, anns$unprot_id), "unprot_id"]
 
 #     return(results_table)
 # }

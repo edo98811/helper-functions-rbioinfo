@@ -15,7 +15,7 @@
 #' @param dds_obj A DESeqDataSet object.
 #' @param contrast A character vector specifying the contrast.
 #' @param FDR A numeric value specifying the false discovery rate threshold.
-#' @param anno_df A data frame containing gene annotations with columns `gene_id` and `gene_name`.
+#' @param anns A data frame containing gene annotations with columns `gene_id` and `gene_name`.
 #' @param anns A data frame containing additional annotations with columns `ensembl_gene_id`, `description`, and `chromosome_name`.
 #' @param species A character string specifying the species for creating links.
 #'
@@ -28,13 +28,13 @@
 #' dds_obj <- DESeqDataSet(...)
 #' contrast <- c("condition", "treated", "control")
 #' FDR <- 0.05
-#' anno_df <- data.frame(gene_id = ..., gene_name = ...)
+#' anns <- data.frame(gene_id = ..., gene_name = ...)
 #' anns <- data.frame(ensembl_gene_id = ..., description = ..., chromosome_name = ...)
 #' species <- "Homo sapiens"
-#' alltheresults(resuSet, dds_obj, contrast, FDR, anno_df, anns, species)
+#' alltheresults(resuSet, dds_obj, contrast, FDR, anns, anns, species)
 #' }
 #' @export
-alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, species) {
+alltheresults <- function(resuSet, dds_obj, contrast, FDR, anns, anns, species) {
   # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
   id_contrast <- contrast
   resuSet[[id_contrast]] <- list()
@@ -46,7 +46,7 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
   resuSet[[id_contrast]][["res_DESeq"]] <- results(dds_obj, name = mycoef, alpha = FDR)
   message("Performing LFC shrinkage...")
   resuSet[[id_contrast]][["res_DESeq"]] <- lfcShrink(dds_obj, coef = mycoef, res = resuSet[[id_contrast]][["res_DESeq"]], type = "apeglm")
-  resuSet[[id_contrast]][["res_DESeq"]]$gene_name <- anno_df$gene_name[match(rownames(resuSet[[id_contrast]][["res_DESeq"]]), anno_df$gene_id)]
+  resuSet[[id_contrast]][["res_DESeq"]]$gene_name <- anns$gene_name[match(rownames(resuSet[[id_contrast]][["res_DESeq"]]), anns$gene_id)]
 
   message("Summary MAplot...")
   summary(resuSet[[id_contrast]][["res_DESeq"]])
@@ -58,13 +58,13 @@ alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, specie
   message("Extracting tables...")
   resuSet[[id_contrast]][["tbl_res_all"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]])
   resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id <- gsub("\\.[0-9]*$", "", resuSet[[id_contrast]][["tbl_res_all"]]$id)
-  resuSet[[id_contrast]][["tbl_res_all"]]$gene_name <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_all"]]$gene_name <- anns$gene_name[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anns$gene_id)]
   resuSet[[id_contrast]][["tbl_res_all"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_all"]]$ensembl_gene_id, anns$ensembl_gene_id)]
 
   message("Extracting DEtables...")
   resuSet[[id_contrast]][["tbl_res_DE"]] <- deseqresult2df(resuSet[[id_contrast]][["res_DESeq"]], FDR = FDR)
   resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id <- gsub("\\.[0-9]*$", "", resuSet[[id_contrast]][["tbl_res_DE"]]$id)
-  resuSet[[id_contrast]][["tbl_res_DE"]]$gene_name <- anno_df$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anno_df$gene_id)]
+  resuSet[[id_contrast]][["tbl_res_DE"]]$gene_name <- anns$gene_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anns$gene_id)]
   resuSet[[id_contrast]][["tbl_res_DE"]]$description <- anns$description[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anns$ensembl_gene_id)]
   # resuSet[[id_contrast]][["tbl_res_DE"]]$chromosome_name <- anns$chromosome_name[match(resuSet[[id_contrast]][["tbl_res_DE"]]$ensembl_gene_id, anns$ensembl_gene_id)]
 

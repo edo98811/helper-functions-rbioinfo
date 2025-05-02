@@ -7,7 +7,7 @@ if (!any(enrich_res$gs_id %in% go_terms)) {
   enrich_res <- get_aggrscores(
     shake_topGOtableResult(myresuSet[[contrast]]$topGO_tbl),
     myresuSet[[contrast]]$res_DESeq,
-    annotation_obj = anno_df
+    annotation_obj = anns
   )
   
   # https://federicomarini.github.io/GeneTonic/reference/gs_scores.html
@@ -15,7 +15,7 @@ if (!any(enrich_res$gs_id %in% go_terms)) {
     se = vst_data,
     res_de = myresuSet[[contrast]]$res_DESeq,
     res_enrich = enrich_res[enrich_res$gs_id %in% go_terms, , drop = FALSE],
-    annotation_obj = anno_df
+    annotation_obj = anns
   )
   
   # lapply(strsplit(rownames(scores_mat),  split = "|", fixed = TRUE), unction(x) x[[2]])

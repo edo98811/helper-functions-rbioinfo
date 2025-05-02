@@ -65,7 +65,7 @@ for (contrast in contrasts) {
     myresuSet <- alltheresults(
       myresuSet, dds_to_use,
       contrast = c(contrast), FDR = FDR,
-      anno_df = anno_df, anns = anns, species = purrr::pluck(params, "species", .default = "Mm")
+      anns = anns, anns = anns, species = purrr::pluck(params, "species", .default = "Mm")
     )
   }
     if (is.null(myresuSet[[contrast]]$etbl_res_DE)) {
@@ -96,7 +96,7 @@ for (contrast in contrasts) {
     myresuSet <- alltheresults(
       myresuSet, dds_to_use,
       contrast = c(contrast), FDR = FDR,
-      anno_df = anno_df, anns = anns, species = purrr::pluck(params, "species", .default = "Mm"))
+      anns = anns, anns = anns, species = purrr::pluck(params, "species", .default = "Mm"))
     # myresuSet[[contrast]]$maplot_res
     if (is.null(myresuSet[[contrast]]$etbl_res_DE)) {
       cat(paste0("No differentially expressed genes found for contrast ", contrast, ". Consider increasing the FDR threshold."))

@@ -3,7 +3,7 @@
 ## Analysis with topGO
 ```{r setup-enrichment}
 expressed_ensembl_id <- rowData(dds)[(rowSums(assay(dds))>0),"ensembl_gene_id"]
-expressed_gene_symbol <- anno_df$gene_name[match(expressed_ensembl_id, anno_df$gene_id)]
+expressed_gene_symbol <- anns$gene_name[match(expressed_ensembl_id, anns$gene_id)]
 ```
 
 ```{r enrichment, eval = TRUE, echo = FALSE}

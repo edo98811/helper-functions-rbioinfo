@@ -18,7 +18,7 @@
 #'     \item Loads the experiment metadata from the specified file and assigns it to the global environment as \code{experiment_metadata}.
 #'     \item If \code{load_gse} is TRUE, attempts to load the GSE object from "analyses_data/gse.RDS" and assigns it to the global environment as \code{gse}.
 #'     \item If \code{load_complete_dds} is TRUE, attempts to load the complete DDS object from the specified source file and assigns it to the global environment as \code{complete_dds}.
-#'     \item Checks if the annotation files ("anns.RDS" and "anno_df.RDS") exist in the "analyses_data" directory. If they exist, loads them and assigns them to the global environment as \code{anns} and \code{anno_df}, respectively.
+#'     \item Checks if the annotation files ("anns.RDS" and "anns.RDS") exist in the "analyses_data" directory. If they exist, loads them and assigns them to the global environment as \code{anns} and \code{anns}, respectively.
 #'   }
 #'
 #' @examples
@@ -63,11 +63,11 @@ prepare_workspace_limma <- function(params) {
 
   if (file.exists(anns_path) && file.exists(anno_df_path)) {
     # anns <- readRDS(anns_path)
-    anno_df <- readRDS(anno_df_path)
+    anns <- readRDS(anno_df_path)
 
     # assign("anns", anns, envir = parent.frame())
-    assign("anno_df", anno_df, envir = parent.frame())
+    assign("anns", anns, envir = parent.frame())
 
-  } else warning("anns and anno_df not loaded! create them after setting up the dds object")
+  } else warning("anns and anns not loaded! create them after setting up the dds object")
 }
 

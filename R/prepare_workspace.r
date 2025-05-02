@@ -18,7 +18,7 @@
 #'     \item Loads the experiment metadata from the specified file and assigns it to the global environment as \code{experiment_metadata}.
 #'     \item If \code{load_gse} is TRUE, attempts to load the GSE object from "analyses_data/gse.RDS" and assigns it to the global environment as \code{gse}.
 #'     \item If \code{load_complete_dds} is TRUE, attempts to load the complete DDS object from the specified source file and assigns it to the global environment as \code{complete_dds}.
-#'     \item Checks if the annotation files ("anns.RDS" and "anno_df.RDS") exist in the "analyses_data" directory. If they exist, loads them and assigns them to the global environment as \code{anns} and \code{anno_df}, respectively.
+#'     \item Checks if the annotation files ("anns.RDS" and "anns.RDS") exist in the "analyses_data" directory. If they exist, loads them and assigns them to the global environment as \code{anns} and \code{anns}, respectively.
 #'   }
 #'
 #' @examples
@@ -95,7 +95,7 @@ prepare_workspace <- function(params) {
   }
 
   anns_path <- "analyses_data/anns.RDS"
-  anno_df_path <- "analyses_data/anno_df.RDS"
+  anno_df_path <- "analyses_data/anns.RDS"
 
   if (file.exists(anns_path)) {
     anns <- readRDS(anns_path)
@@ -105,10 +105,10 @@ prepare_workspace <- function(params) {
   }
 
   if (file.exists(anno_df_path)) {
-    anno_df <- readRDS(anno_df_path)
-    assign("anno_df", anno_df, envir = parent.frame())
+    anns <- readRDS(anno_df_path)
+    assign("anns", anns, envir = parent.frame())
   } else {
-    warning("anno_df not loaded!")
+    warning("anns not loaded!")
   }
 
 }

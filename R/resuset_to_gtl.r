@@ -5,7 +5,7 @@
 #' @param myresuSet A list containing the result sets.
 #' @param result_name A character string specifying the name of the result to be used.
 #' @param dds A DESeqDataSet object.
-#' @param anno_df A data frame containing annotation information.
+#' @param anns A data frame containing annotation information.
 #' @param enrich_algo A character string specifying the enrichment algorithm to be used. 
 #'        Options are "not_given", "topGO_tbl", or "clupro_tbl". Default is "not_given".
 #'
@@ -23,12 +23,12 @@
 #' )
 #' result_name <- "contrast1"
 #' dds <- dds_example
-#' anno_df <- anno_df_example
-#' gtl <- resuset_to_gtl(myresuSet, result_name, dds, anno_df, enrich_algo = "topGO_tbl")
+#' anns <- anno_df_example
+#' gtl <- resuset_to_gtl(myresuSet, result_name, dds, anns, enrich_algo = "topGO_tbl")
 # function to easily generate GeneTonicLists for different contrasts
-resuset_to_gtl <- function(myresuSet, result_name, dds, anno_df, enrich_algo = "not_given") {
+resuset_to_gtl <- function(myresuSet, result_name, dds, anns, enrich_algo = "not_given") {
   dds_gtl <- dds
-  anno_df_gtl <- anno_df
+  anno_df_gtl <- anns
   res_de_gtl <- myresuSet[[result_name]][["res_DESeq"]]
   
   if (enrich_algo == "topGO_tbl") {

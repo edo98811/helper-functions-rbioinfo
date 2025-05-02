@@ -3,8 +3,8 @@
 ## Analysis with topGO
 ```{r setup-enrichment}
 expressed_uniprot_id <- rownames(se_merged)[rowSums(assay(se_merged)) > 0]
-# expressed_ensembl_gene_id <- anno_df[anno_df$uniprotswissprot %in% expressed_uniprot_id, "ensembl_gene_id"]
-expressed_gene_symbol <- anno_df[anno_df$uniprotswissprot %in% expressed_uniprot_id, "mgi_symbol"]
+# expressed_ensembl_gene_id <- anns[anns$uniprotswissprot %in% expressed_uniprot_id, "ensembl_gene_id"]
+expressed_gene_symbol <- anns[anns$uniprotswissprot %in% expressed_uniprot_id, "mgi_symbol"]
 
 # universe_gene_names <- rowData(se_merged)$gene_name[match(geneUniverseExprENS, rowData(se_merged)$gene_id)]
 ```

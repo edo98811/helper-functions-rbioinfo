@@ -18,14 +18,14 @@ create_annotations_proteomics <- function(df) {
 
   if (!is.data.frame(df)) stop("The input object is not a dataframe. Please provide a valid dataframe.")
 
-  anno_df_path <- file.path("analyses_data", "anno_df.RDS")
+  anno_df_path <- file.path("analyses_data", "anns.RDS")
 
   annotations <- annotation_datasets_proteomics(df)
-  anno_df <- annotations$anno_df
-  saveRDS(anno_df, anno_df_path)
+  anns <- annotations$anns
+  saveRDS(anns, anno_df_path)
   remove(annotations)
 
-  assign("anno_df", anno_df, envir = parent.frame())
+  assign("anns", anns, envir = parent.frame())
 }
 
 
@@ -45,7 +45,7 @@ annotation_datasets_proteomics <- function(features_rowdata){
   # "asia" → Asia (https://asia.ensembl.org)
 
   if (organism == "Human") {
-    anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
+    anns <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
     # anno df and anns hanno la stessa funzione
 
     mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl", host = "https://www.ensembl.org")

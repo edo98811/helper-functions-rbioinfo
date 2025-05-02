@@ -98,12 +98,12 @@ library("rbioinfoHelper")
 We start by importing all the necessary data.
 These variables will be created in the workspace:
 
-* anno_df
+* anns
 * anns
 * complete_dds (if needed)
 * experiment_metadata
 
-If anno_df and anns still need to be created they will not be loaded
+If anns and anns still need to be created they will not be loaded
 
 ```{r load-function}
 prepare_workspace(params)

@@ -99,12 +99,12 @@ library("rbioinfoHelper")
 We start by importing all the necessary data.
 These variables will be created in the workspace:
 
-* anno_df
+* anns
 * anns
 * gse object (if needed)
 * experiment_metadata
 
-If anno_df and anns still need to be created they will not be loaded
+If anns and anns still need to be created they will not be loaded
 Note: gse must have at least an ensembl_gene_id column, the rownames must be either ensembl_gene_id or gene_ranges
 
 ```{r load-function}

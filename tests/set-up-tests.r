@@ -18,7 +18,7 @@ dds_macrophage <- DESeqDataSet(gse, design = ~ line + condition)
 rownames(dds_macrophage) <- substr(rownames(dds_macrophage), 1, 15)
 
 # annotation -------------------------------------------------------------------
-anno_df <- data.frame(
+anns <- data.frame(
   gene_id = rownames(dds_macrophage),
   gene_name = mapIds(org.Hs.eg.db,
     keys = rownames(dds_macrophage),
@@ -29,7 +29,7 @@ anno_df <- data.frame(
   row.names = rownames(dds_macrophage)
 )
 # alternatively, one could use the wrapper in ...
-# anno_df <- pcaExplorer::get_annotation_orgdb(dds_macrophage, "org.Hs.eg.db", "ENSEMBL")
+# anns <- pcaExplorer::get_annotation_orgdb(dds_macrophage, "org.Hs.eg.db", "ENSEMBL")
 
 # res_de -----------------------------------------------------------------------
 ## using counts and average transcript lengths from tximeta
@@ -103,7 +103,7 @@ suppressWarnings({
   )
 })
 
-# save(dds_macrophage, res_macrophage_IFNg_vs_naive, vst_macrophage, topgoDE_macrophage_IFNg_vs_naive, anno_df, ego_IFNg_vs_naive, file ="quick_startup.RData")
+# save(dds_macrophage, res_macrophage_IFNg_vs_naive, vst_macrophage, topgoDE_macrophage_IFNg_vs_naive, anns, ego_IFNg_vs_naive, file ="quick_startup.RData")
 
 # load("/Users/fede/Development/GeneTonic/quick_startup.RData")
 dds_unnormalized <- dds_macrophage
@@ -116,7 +116,7 @@ gtl_macrophage <- GeneTonic_list(
   dds = dds_macrophage,
   res_de = res_macrophage_IFNg_vs_naive,
   res_enrich = res_enrich_IFNg_vs_naive,
-  annotation_obj = anno_df
+  annotation_obj = anns
 )
 
 message("--- Test setup script completed!")
