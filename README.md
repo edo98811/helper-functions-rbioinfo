@@ -54,6 +54,8 @@ There are also functions that function with a specific workflow, for example:
 * `load_(limma)`
 * `alltheresults_(limma)`
 
+The rest of the functions are the same for all the workflows.
+
 # Workflow process
 
 The way it works is: you have to prepare a summarized experiment object, the metadata can be either given as external file or in the coldata of the summarized experiment. If they are given externally the rownames (so the first column of the excel or csv file) has to be the same that is found in the colnames of the summarized experiment object. 
