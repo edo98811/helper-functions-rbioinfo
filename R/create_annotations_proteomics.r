@@ -39,16 +39,23 @@ annotation_datasets_proteomics <- function(features_rowdata){
     stop("The input dataframe must contain a 'proteinID' column.")
   }
 
-  # Connect to Ensembl database
-  ensembl <- biomaRt::useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://www.ensembl.org")
   # "www" → Main server (https://www.ensembl.org)
   # "useast" → US East (https://useast.ensembl.org)
   # "uswest" → US West (https://uswest.ensembl.org)
   # "asia" → Asia (https://asia.ensembl.org)
 
+  if (organism == "Human") {
+    anno_df <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
+    # anno df and anns hanno la stessa funzione
+
+    mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl", host = "https://www.ensembl.org")
+  } else if (organism == "Mouse") {
+    mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl", host = "https://www.ensembl.org")
+  } else { stop("Invalid organism") }
+
 
   # Get gene names from protein accession (UniProt ID)
-  anns <- biomaRt::getBM(attributes = c("uniprotswissprot", "mgi_symbol", "ensembl_gene_id", "description"), 
+  anns <- biomaRt::getBM(attributes = c("uniprotswissprot", "external_gene_name", "ensembl_gene_id", "description"), 
                     filters = "uniprotswissprot",
                     values = features_rowdata$proteinID,
                     mart = ensembl)
@@ -59,6 +66,6 @@ annotation_datasets_proteomics <- function(features_rowdata){
   colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
 
   return(list(
-    anno_df = anns)
+    anns = anns)
   )
 }

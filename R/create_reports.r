@@ -51,7 +51,7 @@ create_report <- function(output_filename, type = "dds_gse") {
         )
     else if (type == "se_vdx") 
         rmd_files <- c(
-            "section-01-setup_dds.Rmd",
+            "section-01-setup_se_vdx.Rmd",
             "section-02-design.Rmd",
             "section-03-DDs_from_DE.Rmd",
             "section-04-EDA.Rmd",

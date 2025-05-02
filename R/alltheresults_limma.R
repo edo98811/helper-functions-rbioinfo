@@ -33,7 +33,6 @@
 #' }
 #'
 #' @export
-
 alltheresults_limma <- function(resuSet, fitted_limma_model, contrast, FDR, anno_df, species = "mus_musculus") {
 
     # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
