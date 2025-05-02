@@ -14,7 +14,7 @@ if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)) {
   for (i in names(myresuSet)) {
     if (nrow(myresuSet[[i]][["tbl_res_DE"]]) > 0) {
       myresuSet[[i]][["topGO_tbl"]] <- 
-        topGOtable(DEgenes = myresuSet[[i]][["tbl_res_DE"]]$geneSymbol, 
+        topGOtable(DEgenes = myresuSet[[i]][["tbl_res_DE"]]$gene_symbol, 
                   BGgenes = expressed_gene_symbol, 
                   ontology = "BP",
                   geneID = "symbol",

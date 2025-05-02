@@ -1,4 +1,4 @@
-#' Save Proteomics Data
+#' Save in se vdx workflow (proteomics data)
 #'
 #' This function saves proteomics data objects to specified directories.
 #'
@@ -45,11 +45,11 @@ save_proteomics_data <- function(vdx, se, analysis_name, params = list(), result
     message("Data saved successfully in ", dir_path)
 }
 
-#' Load Proteomics Data
+#' Load in se vdx workflow (proteomics data)
 #'
 #' This function loads proteomics data for a given experiment from specified RDS files.
 #'
-#' @param analysis_name A character string specifying the name of the experiment.
+#' @param params The list of the workflow parameters.
 #'
 #' @return This function does not return a value but loads the following objects into the parent environment:
 #' \itemize{
@@ -69,7 +69,7 @@ save_proteomics_data <- function(vdx, se, analysis_name, params = list(), result
 #' }
 #'
 #' @export
-load_proteomics_data <- function(params) {
+load_se_vdx <- function(params) {
     
     analysis_name <- params$analysis_name
     # Define the directory path
@@ -108,3 +108,31 @@ load_proteomics_data <- function(params) {
     assign("vdx", vdx, envir = , envir = parent.frame)
     assign("se", se, envir = , envir = parent.frame)
 }
+
+#' @rdname load_proteomics_data
+#' @examples load_se_vdx(list(analysis_name = "experiment_1"))
+#' @export
+load_proteomics_data <- function(vdx, se, analysis_name, params = list(), results_object = NULL) {
+  .Deprecated("load_se_vdx")
+  load_se_vdx(params)
+}
+
+
+#' @rdname save_proteomics_data
+#' @examples save_se_vdx(vdx, se, "experiment_1", list(), results_object)
+#' @export
+save_proteomics_data <- function(vdx, se, analysis_name, params = list(), results_object = NULL) {
+  .Deprecated("save_se_vdx")
+  save_se_vdx(vdx, se, analysis_name, params, results_object)
+}
+
+
+#' @rdname load_proteomics_data
+#' @examples load_se_vdx(list(analysis_name = "experiment_1"))
+#' @export
+load_limma <- load_se_vdx(params)
+
+#' @rdname save_proteomics_data
+#' @examples save_se_vdx(vdx, se, "experiment_1", list(), results_object)
+#' @export
+save_limma <- save_se_vdx(vdx, se, analysis_name, params, results_object)

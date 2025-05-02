@@ -36,7 +36,7 @@
 #' @importFrom purrr pluck
 #' 
 #' @export
-prepare_workspace_proteomics <- function(params) {
+prepare_workspace_limma <- function(params) {
   if (purrr:plukk(params, "workflow", .default = "DESeq2") == "DESeq2") {
       
       tryCatch({

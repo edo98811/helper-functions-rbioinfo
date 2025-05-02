@@ -34,7 +34,6 @@
 #' alltheresults(resuSet, dds_obj, contrast, FDR, anno_df, anns, species)
 #' }
 #' @export
-
 alltheresults <- function(resuSet, dds_obj, contrast, FDR, anno_df, anns, species) {
   # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
   id_contrast <- contrast

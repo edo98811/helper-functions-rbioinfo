@@ -49,10 +49,30 @@ create_report <- function(output_filename, type = "dds_gse") {
             "section-08-enrichment.Rmd",
             "section-09-save.Rmd"
         )
+    else if (type == "se_vdx") 
+        rmd_files <- c(
+            "section-01-setup_dds.Rmd",
+            "section-02-design.Rmd",
+            "section-03-DDs_from_DE.Rmd",
+            "section-04-EDA.Rmd",
+            "section-05-n_reads.Rmd",
+            "section-06-pca.Rmd",
+            "section-07-DE.Rmd",
+            "section-08-enrichment.Rmd",
+            "section-09-save.Rmd"
+        )
     else if (type == "plots_dds") 
         rmd_files <- c(
             "section-01-setup_dds_gse.Rmd",
-            "section_geneplots.Rmd",
+            "section_geneplots_dds.Rmd",
+            "section_horizon_plots.Rmd",
+            "section_heatmap_genes.Rmd",
+            "section_heatmap_go_terms.Rmd"
+        )
+    else if (type == "plots_limma") 
+        rmd_files <- c(
+            "section-01-setup_se_vdx.Rmd",
+            "section_geneplots_limma.Rmd",
             "section_horizon_plots.Rmd",
             "section_heatmap_genes.Rmd",
             "section_heatmap_go_terms.Rmd"

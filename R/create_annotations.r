@@ -62,11 +62,12 @@ annotation_datasets <- function(dds, organism = "Human"){
 
   } else { stop("Invalid organism") }
   # https://www.rdocumentation.org/packages/biomaRt/versions/2.28.0/topics/getBM
-  anns <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "description"), 
+  anns <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "uniprotswissprot", "description"), 
                 filters = "ensembl_gene_id",
                 values = rownames(dds), 
                 mart = mart)
-
+  colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
+  
   anns <- anns[match(rownames(dds), anns$ensembl_gene_id), ]
 
   return(list(
