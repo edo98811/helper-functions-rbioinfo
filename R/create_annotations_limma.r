@@ -14,7 +14,7 @@
 #' }
 #'
 #' @export
-create_annotations_proteomics <- function(df) {
+create_annotations_limma <- function(df) {
 
   if (!is.data.frame(df)) stop("The input object is not a dataframe. Please provide a valid dataframe.")
 
@@ -30,7 +30,7 @@ create_annotations_proteomics <- function(df) {
 
 
 
-annotation_datasets_proteomics <- function(features_rowdata){
+annotation_datasets_limma <- function(features_rowdata){
 
   # <- as.data.frame(rowData(se))
 

@@ -19,22 +19,22 @@ create_annotations <- function(dds) {
   if (!inherits(dds, "DESeqDataSet")) stop("dds object is not of class 'DDSdataset'. Please provide a valid dds object.")
 
   anns_path <- file.path("analyses_data", "anns.RDS")
-  anno_df_path <- file.path("analyses_data", "anns.RDS")
+  # anno_df_path <- file.path("analyses_data", "anno_df.RDS")
 
   annotations <- annotation_datasets(dds)
   anns <- annotations$anns
-  anns <- annotations$anns
+  # anno_df <- annotations$anno_df
   saveRDS(anns, anns_path)
-  saveRDS(anns, anno_df_path)
+  # saveRDS(anno_df, anno_df_path)
   remove(annotations)
 
-  assign("anns", anns, envir = parent.frame())
+  # assign("anno_df", anno_df, envir = parent.frame())
   assign("anns", anns, envir = parent.frame())
 }
 
 
 
-annotation_datasets <- function(dds, organism = "Human"){
+annotation_datasets <- function(dds, organism = "Human") {
 
   row_names <- rownames(as.data.frame(rowData(dds)))
   rownames(dds) <- gsub("\\.[0-9]*$", "", row_names)
@@ -64,8 +64,9 @@ annotation_datasets <- function(dds, organism = "Human"){
   # https://www.rdocumentation.org/packages/biomaRt/versions/2.28.0/topics/getBM
   anns <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "uniprotswissprot", "description"), 
                 filters = "ensembl_gene_id",
-                values = rownames(dds), 
+                values = ifelse(params$workflow == "limma", rownames(dds), features_rowdata$proteinID) 
                 mart = mart)
+
   colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
 
   anns <- anns[match(rownames(dds), anns$ensembl_gene_id), ]

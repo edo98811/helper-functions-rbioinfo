@@ -49,11 +49,10 @@ create_report <- function(output_filename, type = "dds_gse") {
             "section-08-enrichment.Rmd",
             "section-09-save.Rmd"
         )
-    else if (type == "se_vdx") 
+    else if (type == "limma") 
         rmd_files <- c(
             "section-01-setup_se_vdx.Rmd",
-            "section-02-design.Rmd",
-            "section-03-DDs_from_DE.Rmd",
+            "section-02-design_limma.Rmd",
             "section-04-EDA.Rmd",
             "section-05-n_reads.Rmd",
             "section-06-pca.Rmd",

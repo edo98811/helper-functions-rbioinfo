@@ -1,0 +1,34 @@
+# Design matrix Definition
+```{r design-matrix}
+metadata_merged <- colData(se_merged)
+
+group <- gsub(" ", "_", unlist(metadata_merged$group)) 
+group <- factor(make.names(group)) 
+names(group) <- rownames(metadata_merged)
+design <- model.matrix(~0 + group) 
+colnames(design) <- gsub("group", "", colnames(design))
+kable(design)
+```
+
+To fit a model in limma a contrast matrix is also needed.
+
+```{r contrast-mtrix}
+contrast.matrix <- makeContrasts(
+
+
+  levels = design
+)
+kable(contrast.matrix)
+```
+
+# Set contrasts
+
+
+```{r defining-contrasts, echo = TRUE}
+
+contrasts <- c(
+  "group1_vs_group2", 
+  "group1_vs_group3",
+  "group2_vs_group3"
+)
+```

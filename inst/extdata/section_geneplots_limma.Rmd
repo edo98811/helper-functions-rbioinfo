@@ -6,7 +6,7 @@ Here you can see the expression of some genes of your choice.
 Tπhere is a section to select the genes that are present from a specific gene set. You need to select the contrast and the GO term that you wish and the genes will be plotted. you can copy and paste the code if you wish to do this plot for more gene sets
 
 ```{r genePlots, eval = TRUE, echo = TRUE}
-dds <- add_symbols(dds, anns)
+# dds <- add_symbols(dds, anns)
 contrast <- "group_AT2_vs_ctrl" #or the one you prefer
 go_term <- "GO:0071347" # to choose
 res_enrichment <- myresuSet$group_AT2_vs_ctrl$topGO_tbl
@@ -15,8 +15,8 @@ genes <- strsplit(genes_string, ",")[[1]]
 
 for (gene in genes) {
 
-  if (gene %in% rowData(dds)$SYMBOL)
-    gene_ensemblID <- as.data.frame(rowData(dds)) |> dplyr::filter(SYMBOL == gene) |> rownames()
+  if (gene %in% rowData(dds)$gene_name)
+    gene_ensemblID <- as.data.frame(rowData(dds)) |> dplyr::filter(gene_name == gene) |> rownames()
   else {
     cat("Gene not found in the dataset.")
     next
