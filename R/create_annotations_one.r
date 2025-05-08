@@ -64,7 +64,7 @@ annotation_datasets <- function(dds, organism = "Human") {
   # https://www.rdocumentation.org/packages/biomaRt/versions/2.28.0/topics/getBM
   anns <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "uniprotswissprot", "description"), 
                 filters = "ensembl_gene_id",
-                values = ifelse(params$workflow == "limma", rownames(dds), features_rowdata$proteinID) 
+                values = ifelse(params$workflow == "limma", rownames(dds), features_rowdata$proteinID),
                 mart = mart)
 
   colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
@@ -74,5 +74,5 @@ annotation_datasets <- function(dds, organism = "Human") {
   return(list(
     anns = anns, 
     # anns = anns)
-  )
+  ))
 }

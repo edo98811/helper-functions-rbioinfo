@@ -109,30 +109,30 @@ load_se_vdx <- function(params) {
     assign("se", se, envir = , envir = parent.frame)
 }
 
-#' @rdname load_proteomics_data
-#' @examples load_se_vdx(list(analysis_name = "experiment_1"))
-#' @export
-load_proteomics_data <- function(vdx, se, analysis_name, params = list(), results_object = NULL) {
-  .Deprecated("load_se_vdx")
-  load_se_vdx(params)
-}
+# #' @rdname load_proteomics_data
+# #' @examples load_se_vdx(list(analysis_name = "experiment_1"))
+# #' @export
+# load_proteomics_data <- function(vdx, se, analysis_name, params = list(), results_object = NULL) {
+#   .Deprecated("load_se_vdx")
+#   load_se_vdx(params)
+# }
 
 
-#' @rdname save_proteomics_data
-#' @examples save_se_vdx(vdx, se, "experiment_1", list(), results_object)
-#' @export
-save_proteomics_data <- function(vdx, se, analysis_name, params = list(), results_object = NULL) {
-  .Deprecated("save_se_vdx")
-  save_se_vdx(vdx, se, analysis_name, params, results_object)
-}
+# #' @rdname save_proteomics_data
+# #' @examples save_se_vdx(vdx, se, "experiment_1", list(), results_object)
+# #' @export
+# save_proteomics_data <- function(vdx, se, analysis_name, params = list(), results_object = NULL) {
+#   .Deprecated("save_se_vdx")
+#   save_se_vdx(vdx, se, analysis_name, params, results_object)
+# }
 
 
-#' @rdname load_proteomics_data
-#' @examples load_se_vdx(list(analysis_name = "experiment_1"))
-#' @export
-load_limma <- load_se_vdx(params)
+# #' @rdname load_proteomics_data
+# #' @examples load_se_vdx(list(analysis_name = "experiment_1"))
+# #' @export
+# load_limma <- load_se_vdx(params)
 
-#' @rdname save_proteomics_data
-#' @examples save_se_vdx(vdx, se, "experiment_1", list(), results_object)
-#' @export
-save_limma <- save_se_vdx(vdx, se, analysis_name, params, results_object)
+# #' @rdname save_proteomics_data
+# #' @examples save_se_vdx(vdx, se, "experiment_1", list(), results_object)
+# #' @export
+# save_limma <- save_se_vdx(vdx, se, analysis_name, params, results_object)

@@ -33,7 +33,7 @@
 #' }
 #'
 #' @export
-alltheresults_limma <- function(resuSet, fitted_limma_model, contrast, FDR, anns, species = "mus_musculus") {
+alltheresults_limma <- function(resuSet, fitted_limma_model, contrast, FDR, anns, species = "Mus_musculus") {
 
     # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
     id_contrast <- contrast
@@ -45,7 +45,7 @@ alltheresults_limma <- function(resuSet, fitted_limma_model, contrast, FDR, anns
     resuSet[[id_contrast]][["fitted_model"]] <- fitted_limma_model
 
     message("Extracting tables...")
-    resuSet[[id_contrast]][["tbl_res_all"]] <- add_gene_info(topTable(fit2, coef=contrast, adjust="fdr", number=Inf, confint = TRUE), anns)
+    resuSet[[id_contrast]][["tbl_res_all"]] <- add_gene_info(topTable(fit2, coef=contrast, adjust="fdr", number=Inf, confint = FALSE), anns)
 
     message("Extracting DEtables...")
     resuSet[[id_contrast]][["tbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_all"]][resuSet[[id_contrast]][["tbl_res_all"]]$adj.P.Val < FDR, ]

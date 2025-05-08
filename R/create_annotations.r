@@ -15,7 +15,6 @@
 #'
 #' @export
 create_annotations <- function(dds) {
-
   if (!inherits(dds, "DESeqDataSet")) stop("dds object is not of class 'DDSdataset'. Please provide a valid dds object.")
 
   anns_path <- file.path("analyses_data", "anns.RDS")
@@ -35,44 +34,44 @@ create_annotations <- function(dds) {
 
 
 annotation_datasets <- function(dds, organism = "Human") {
-
   row_names <- rownames(as.data.frame(rowData(dds)))
   rownames(dds) <- gsub("\\.[0-9]*$", "", row_names)
 
   if (organism == "Human") {
-
     anns <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
     # anno df and anns hanno la stessa funzione
 
-    mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl", host = "https://www.ensembl.org")
+    mart <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl", host = "https://www.ensembl.org")
     # "www" → Main server (https://www.ensembl.org)
     # "useast" → US East (https://useast.ensembl.org)
     # "uswest" → US West (https://uswest.ensembl.org)
     # "asia" → Asia (https://asia.ensembl.org)
   } else if (organism == "Mouse") {
-
     anns <- pcaExplorer::get_annotation_orgdb(dds, "org.Mm.eg.db", "ENSEMBL")
     # anno df and anns hanno la stessa funzione
 
-    mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl", host = "https://www.ensembl.org")
+    mart <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL", dataset = "mmusculus_gene_ensembl", host = "https://www.ensembl.org")
     # "www" → Main server (https://www.ensembl.org)
     # "useast" → US East (https://useast.ensembl.org)
     # "uswest" → US West (https://uswest.ensembl.org)
     # "asia" → Asia (https://asia.ensembl.org)
-
-  } else { stop("Invalid organism") }
+  } else {
+    stop("Invalid organism")
+  }
   # https://www.rdocumentation.org/packages/biomaRt/versions/2.28.0/topics/getBM
-  anns <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "uniprotswissprot", "description"), 
-                filters = "ensembl_gene_id",
-                values = ifelse(params$workflow == "limma", rownames(dds), features_rowdata$proteinID) 
-                mart = mart)
+  anns <- biomaRt::getBM(
+    attributes = c("ensembl_gene_id", "external_gene_name", "uniprotswissprot", "description"),
+    filters = "ensembl_gene_id",
+    values = ifelse(params$workflow == "limma", rownames(dds), features_rowdata$proteinID),
+    mart = mart
+  )
 
   colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
 
   anns <- anns[match(rownames(dds), anns$ensembl_gene_id), ]
 
   return(list(
-    anns = anns, 
+    anns = anns,
     # anns = anns)
-  )
+  ))
 }

@@ -64,3 +64,8 @@ The it is enough to call the function prepare workspace (or prepare_workspace_li
 Then the analysis can be loaded. This means that the results, which were saved either in the limma format or the dds format are loaded if needed, this is done to skip unnecessary calculations in the next step. 
 Then the loaded gse can be subsetted, if the analysis that in this moment i want to run requires only a subset of the subjects.
 At this point we can start with the real analysis, the first thing to do is to define the design of the experiemnt, to do this we start from the columns that are present in the metadata that we will use to define the design, we can wreite them in the factor coulns object, then the design is defined and printed, after this the contrasts that are of intertest. This step is only necessary with dds and not with limma.
+
+
+### Create report 
+
+You can create a report from a template using the `create_report` function. The template is composed of sections that are put together in a different way depending on the type of workkflow (report) selected. The parameter that should be given is the file location where the report will be created. Force is by default set to false but can be set to true if needed and in this case if there is an existing report it will be overwritten, be careful. The sections can also be aribtrarly put together when provided as a list. The sections can be listed with `list_report_sections()`.

@@ -19,9 +19,11 @@ create_annotations_limma <- function(df) {
   if (!is.data.frame(df)) stop("The input object is not a dataframe. Please provide a valid dataframe.")
 
   anno_df_path <- file.path("analyses_data", "anns.RDS")
+  if (!dir.exists("analyses_data")) dir.create("analyses_data")
 
-  annotations <- annotation_datasets_proteomics(df)
+  annotations <- annotation_datasets_limma(df)
   anns <- annotations$anns
+
   saveRDS(anns, anno_df_path)
   remove(annotations)
 
@@ -30,13 +32,13 @@ create_annotations_limma <- function(df) {
 
 
 
-annotation_datasets_limma <- function(features_rowdata){
+annotation_datasets_limma <- function(features_rowdata, organism = "Human"){
 
   # <- as.data.frame(rowData(se))
 
   # Check if the input dataframe contains a 'proteinID' column
-  if (!"proteinID" %in% colnames(features_rowdata)) {
-    stop("The input dataframe must contain a 'proteinID' column.")
+  if (!"uniprot_id" %in% colnames(features_rowdata)) {
+    stop("The input dataframe must contain a 'unprot_id' column.")
   }
 
   # "www" → Main server (https://www.ensembl.org)
@@ -45,9 +47,6 @@ annotation_datasets_limma <- function(features_rowdata){
   # "asia" → Asia (https://asia.ensembl.org)
 
   if (organism == "Human") {
-    anns <- pcaExplorer::get_annotation_orgdb(dds, "org.Hs.eg.db", "ENSEMBL")
-    # anno df and anns hanno la stessa funzione
-
     mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="hsapiens_gene_ensembl", host = "https://www.ensembl.org")
   } else if (organism == "Mouse") {
     mart <- biomaRt::useMart(biomart="ENSEMBL_MART_ENSEMBL", dataset="mmusculus_gene_ensembl", host = "https://www.ensembl.org")
@@ -57,10 +56,10 @@ annotation_datasets_limma <- function(features_rowdata){
   # Get gene names from protein accession (UniProt ID)
   anns <- biomaRt::getBM(attributes = c("uniprotswissprot", "external_gene_name", "ensembl_gene_id", "description"), 
                     filters = "uniprotswissprot",
-                    values = features_rowdata$proteinID,
-                    mart = ensembl)
+                    values = features_rowdata$uniprot_id,
+                    mart = mart)
 
-  anns <- anns[match(features_rowdata$proteinID, anns$uniprotswissprot), ]
+  anns <- anns[match(features_rowdata$uniprot_id, anns$uniprotswissprot), ]
 
   anns <- anns[, c("uniprotswissprot", "external_gene_name", "ensembl_gene_id", "description")]
   colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
