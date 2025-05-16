@@ -13,7 +13,6 @@ expressed_gene_symbol <- anno_df[anno_df$uniprotswissprot %in% expressed_uniprot
 # enrichment with topGO
 if (!purrr::pluck(params, "load_results_objects", .default = FALSE)) {
   for (i in names(myresuSet)) {
-    message(i)
     if (nrow(myresuSet[[i]][["tbl_res_DE"]]) > 0) {
       myresuSet[[i]][["topGO_tbl"]] <- 
         mosdef::run_topGO(DEgenes = myresuSet[[i]][["tbl_res_DE_genes"]]$gene_symbol, 
@@ -32,6 +31,8 @@ if (!purrr::pluck(params, "load_results_objects", .default = FALSE)) {
 # You need this code to conduct the magic dependences attaching...
 DT::datatable(matrix())
 ```
+
+## Contrasts
 
 ```{r enrichment-tables, eval = TRUE, echo = FALSE, results = 'asis'}
 for (contrast in contrasts){

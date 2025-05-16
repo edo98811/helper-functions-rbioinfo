@@ -49,6 +49,14 @@ create_report <- function(output_filename, type = "dds_gse") {
             "section-08-enrichment.Rmd",
             "section-09-save.Rmd"
         )
+    else if (type == "plots_dds") 
+        rmd_files <- c(
+            "section-01-setup_dds_gse.Rmd",
+            "section_geneplots.Rmd",
+            "section_horizon_plots.Rmd",
+            "section_heatmap_genes.Rmd",
+            "section_heatmap_go_terms.Rmd"
+        )
     else stop("Invalid report type")
 
     rmd_dir <- system.file("extdata", package = "rbioinfoHelper")

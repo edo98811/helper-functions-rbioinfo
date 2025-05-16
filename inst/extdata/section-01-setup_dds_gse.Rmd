@@ -72,7 +72,7 @@ options(replace.assign = TRUE,
         width = 80)
 ```
 
-```{r loadLibraries,results='hide'}
+```{r load-libraries,results='hide'}
 library("SummarizedExperiment")
 library("ggplot2")
 # library("limma")

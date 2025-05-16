@@ -8,7 +8,7 @@ vst <- vst(dds)
 
 ```{r pca}
 
-message(paste0("possible grouping columns: ", paste(factor_columns, collapse = ", ")))
+cat(paste0("possible grouping columns: ", paste(factor_columns, collapse = ", ")))
 
 pca_data <- pcaExplorer::pcaplot(vst, returnData = T, intgroup = factor_columns[[1]], ellipse = FALSE, text_labels = FALSE, ntop = 5000)
 

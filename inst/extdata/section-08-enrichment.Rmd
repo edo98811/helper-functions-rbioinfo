@@ -18,7 +18,7 @@ if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)) {
                   BGgenes = expressed_gene_symbol, 
                   ontology = "BP",
                   geneID = "symbol",
-                  addGeneToTerms = TRUE, 
+                S addGeneToTerms = TRUE, 
                   topTablerows = 500,
                   mapping = mapping)
     }
@@ -26,7 +26,8 @@ if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)) {
 }
 ```
 
-## contrasts
+## Contrasts
+
 ```{r, echo = FALSE,include = FALSE}
 # You need this code to conduct the magic dependences attaching...
 DT::datatable(matrix())

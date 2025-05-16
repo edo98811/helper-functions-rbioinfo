@@ -20,6 +20,6 @@ If needed delete the not expressed genes from the dds object
 ```{r unexpressed-dds-object, eval = FALSE, include=FALSE}
 
 dds <- dds[rowSums(counts(dds)) >= 5,]
-dds_interaction_term <- dds_interaction_term[rowSums(counts(dds_interaction_term)) >= 5,]
+# dds_interaction_term <- dds_interaction_term[rowSums(counts(dds_interaction_term)) >= 5,]
 
 ```

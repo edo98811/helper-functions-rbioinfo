@@ -1,7 +1,7 @@
 
-# Convert dds from DE
+# Convert dds from SE
 
-Let's check the number of assigned reads per sample as a proxy of the sequencing depth in the main dds object.
+Now let's create the `DESeqDataSet` object using the `RangedSummarizedExperiment` :
 
 ```{r dds-from-gse}
 if (!purrr::pluck(params, "load_dds_objects", .default = FALSE) && 

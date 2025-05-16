@@ -12,9 +12,9 @@ for (col in factor_columns) {
 }
 colnames(colData(dds))
 for (col in factor_columns) {
-  message(paste0("Unique values for ", col, ": ", paste0(unique(colData(dds)[[col]]), collapse = ", ")))
+  cat(paste0("Unique values for ", col, ": ", paste0(unique(colData(dds)[[col]]), collapse = ", ")))
 }
-message("are all necessary columns factors?")
+cat("are all necessary columns factors?")
 sapply(colData(dds), is.factor)
 ```
 
@@ -22,7 +22,7 @@ sapply(colData(dds), is.factor)
 Are the columns factors? 
 
 ```{r ngenes-genes, echo = FALSE}
-message(paste0("numer of genes: ", nrow(dds))) # total number of genes
+cat(paste0("numer of genes: ", nrow(dds))) # total number of genes
 ```
 
 Does this gene entry have expression different from 0 in at least one sample?
