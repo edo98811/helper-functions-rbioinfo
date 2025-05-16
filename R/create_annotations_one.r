@@ -67,7 +67,7 @@ annotation_datasets <- function(dds, organism = "Human") {
                 values = ifelse(params$workflow == "limma", rownames(dds), features_rowdata$proteinID),
                 mart = mart)
 
-  colnames(anns) <- c("unprot_id", "gene_symbol", "ensembl_gene_id", "description")
+  colnames(anns) <- c("uniprot_id", "gene_symbol", "ensembl_gene_id", "description")
 
   anns <- anns[match(rownames(dds), anns$ensembl_gene_id), ]
 
