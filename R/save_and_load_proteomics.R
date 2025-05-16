@@ -98,7 +98,7 @@ load_proteomics_data <- function(params) {
     results_path <- file.path(dir_path, "results_object.rds")
     if (file.exists(results_path) && (purrr::pluck(params, "load_results_objects", .default = FALSE))) {
         results_object <- readRDS(results_path)
-        assign("myresuSet", results_object, envir = , envir = parent.frame)
+        assign("myresuSet", results_object, envir = parent.frame)
     } else {
         message("No results object found")
     }
