@@ -105,6 +105,6 @@ load_proteomics_data <- function(params) {
     
     message("Data loaded successfully from ", dir_path)
     
-    assign("vdx", vdx, envir = , envir = parent.frame)
-    assign("se", se, envir = , envir = parent.frame)
+    assign("vdx", vdx, envir = parent.frame)
+    assign("se", se, envir = parent.frame)
 }
