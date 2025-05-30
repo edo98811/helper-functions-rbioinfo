@@ -16,8 +16,6 @@
 #'   }
 #'
 #' @return Returns \code{TRUE} if all required parameters are present and valid.
-#' @throws An error if any required parameter is missing or if the values of 
-#'   \code{subset_object} or \code{species} are invalid.
 #'
 #' @examples
 #' params <- list(

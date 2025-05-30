@@ -13,8 +13,8 @@ Imports:
   DESeq2,
   edgeR,
   AnnotationDbi,
-  org,.Hs.eg.db
-  org,.Mm.eg.db
+  org.Hs.eg.db,
+  org.Mm.eg.db,
   htmltools,
   DT,
   htmltools,
