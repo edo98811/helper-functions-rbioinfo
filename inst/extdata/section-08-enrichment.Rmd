@@ -18,7 +18,7 @@ if (!purrr::pluck(params, "load_dds_objects", .default = FALSE)) {
                   BGgenes = expressed_gene_symbol, 
                   ontology = "BP",
                   geneID = "symbol",
-                S addGeneToTerms = TRUE, 
+                  addGeneToTerms = TRUE, 
                   topTablerows = 500,
                   mapping = mapping)
     }
