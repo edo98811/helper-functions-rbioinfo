@@ -1,6 +1,17 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-*.Rproj
+report_template/
+
+# macOS system files
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# RStudio files
+.Rproj.user/
+*.Rproj
+*.Rhistory
+*.RData
+*.Ruserdata
+
+# VSCode files
+.vscode/
+*.code-workspace

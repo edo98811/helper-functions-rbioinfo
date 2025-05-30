@@ -1,0 +1,51 @@
+# Enrichment
+
+## Analysis with topGO
+```{r setup-enrichment}
+expressed_uniprot_id <- rownames(se_merged)[rowSums(assay(se_merged)) > 0]
+# expressed_ensembl_gene_id <- anns[anns$uniprotswissprot %in% expressed_uniprot_id, "ensembl_gene_id"]
+expressed_gene_symbol <- anns[anns$uniprotswissprot %in% expressed_uniprot_id, "mgi_symbol"]
+
+# universe_gene_names <- rowData(se_merged)$gene_name[match(geneUniverseExprENS, rowData(se_merged)$gene_id)]
+```
+
+```{r enrichment, eval = TRUE, echo = FALSE}
+# enrichment with topGO
+if (!purrr::pluck(params, "load_results_objects", .default = FALSE)) {
+  for (i in names(myresuSet)) {
+    if (nrow(myresuSet[[i]][["tbl_res_DE"]]) > 0) {
+      myresuSet[[i]][["topGO_tbl"]] <- 
+        mosdef::run_topGO(DEgenes = myresuSet[[i]][["tbl_res_DE_genes"]]$gene_symbol, 
+                  BGgenes = expressed_gene_symbol, 
+                  ontology = "BP",
+                  geneID = "symbol",
+                  addGeneToTerms = TRUE, 
+                  topTablerows = 500,
+                  mapping = "org.Mm.eg.db")
+    }
+  }
+}
+```
+
+```{r, echo = FALSE,include = FALSE}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
+## Contrasts
+
+```{r enrichment-tables, eval = TRUE, echo = FALSE, results = 'asis'}
+for (contrast in contrasts){
+  cat(
+    knitr::knit_print(
+      DT::datatable(
+        myresuSet[[contrast]]$topGO_tbl, 
+        escape = FALSE, 
+        rownames = TRUE, 
+        caption = htmltools::tags$caption(style = 'caption-side: top; color:black; font-size: 2em', paste0("Enrichment ", contrast)
+        )
+      )
+    )
+  )
+}
+```

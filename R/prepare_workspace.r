@@ -1,115 +1,114 @@
-#' Prepare Workspace
+#' Prepare Workspace for Bioinformatics Analysis
 #'
-#' This function prepares the workspace by loading various data files and assigning them to the global environment.
+#' This function initializes the workspace for bioinformatics analysis by loading required objects and metadata files.
 #'
 #' @param params A list containing the following elements:
 #'   \itemize{
-#'     \item \code{sample_metadata_file}: Path to the experiment metadata file (xlsx format).
-#'     \item \code{load_gse}: Logical, whether to load the GSE object (default is FALSE).
-#'     \item \code{load_complete_dds}: Logical, whether to load the complete DDS object (default is FALSE).
-#'     \item \code{complete_dds_source}: Path to the complete DDS source file.
+#'     \item \code{workflow}: A string specifying the workflow type. Supported values are \code{"se"}, \code{"se_vdx"}, \code{"se_dds"}, \code{"dds"}, or \code{"se_dds"}.
+#'     \item \code{run_computations}: A logical value indicating whether computations should be run (not used in the current implementation).
+#'     \item \code{analysis_folder}: A string specifying the folder where analysis results are stored.
+#'     \item \code{analysis_name}: A string specifying the name of the analysis (not used in the current implementation).
+#'     \item \code{metadata_file}: A string specifying the path to the metadata file (CSV or Excel format).
 #'   }
 #'
-#' @return This function does not return a value. It assigns the loaded data to the global environment.
+#' @return Logical \code{TRUE} if the workspace is successfully prepared.
 #'
-#' @details The function performs the following steps:
-#'   \itemize{
-#'     \item Checks if the experiment metadata file exists. If not, it stops with an error.
-#'     \item Loads the experiment metadata from the specified file and assigns it to the global environment as \code{experiment_metadata}.
-#'     \item If \code{load_gse} is TRUE, attempts to load the GSE object from "analyses_data/gse.RDS" and assigns it to the global environment as \code{gse}.
-#'     \item If \code{load_complete_dds} is TRUE, attempts to load the complete DDS object from the specified source file and assigns it to the global environment as \code{complete_dds}.
-#'     \item Checks if the annotation files ("anns.RDS" and "anno_df.RDS") exist in the "analyses_data" directory. If they exist, loads them and assigns them to the global environment as \code{anns} and \code{anno_df}, respectively.
-#'   }
+#' @details
+#' The function performs the following tasks:
+#' \itemize{
+#'   \item Validates the input parameters.
+#'   \item Loads RDS objects (\code{se}, \code{dds}, and \code{anns}) based on the specified workflow and directory path.
+#'   \item Reads the metadata file, which can be in CSV or Excel format.
+#' }
+#'
+#' @note
+#' The function requires the \code{readxl} package to read Excel files. Ensure the package is installed if using Excel metadata files.
 #'
 #' @examples
 #' \dontrun{
 #' params <- list(
-#'   sample_metadata_file = "path/to/metadata.xlsx",
-#'   load_gse = TRUE,
-#'   load_complete_dds = TRUE,
-#'   complete_dds_source = "path/to/complete_dds.RDS"
+#'   workflow = "se_dds",
+#'   run_computations = TRUE,
+#'   analysis_folder = "path/to/analysis_folder",
+#'   analysis_name = "example_analysis",
+#'   metadata_file = "path/to/metadata.csv"
 #' )
 #' prepare_workspace(params)
 #' }
 #'
-#' @importFrom readxl read_xlsx
-#' @importFrom purrr pluck
-#' 
 #' @export
+# Function: prepare_workspace
+# Description: Skeleton for a function to prepare the workspace for bioinformatics analysis.
+
 prepare_workspace <- function(params) {
-    if (purrr::pluck(params, "workflow", .default = "dds_gse") == "dds_gse") { 
 
-      if (!dir.exists("analyses_data")) {
-        dir.create("analyses_data")
-        message("Created 'analyses_data' directory")
+  # Validate the input parameters
+  if (!is.list(params) || !all(c("workflow", "run_computations", "analysis_folder", "analysis_name", "metadata_file") %in% names(params))) {
+    stop("Invalid parameters provided. Please provide a list with 'workflow', 'run_computations', 'analysis_folder', and 'analysis_name', 'metadata_file'.")
+  }
+
+  # Determine the directory path based on the provided parameters
+  dir_path <- ifelse(params$analysis_folder, 
+                     file.path(params$analysis_folder), 
+                     file.path("analysis_results"))
+
+  
+  # Initialize workspace
+  message("Initializing workspace...")
+  if (params$workflow == "se" || params$workflow == "se_vdx" || params$workflow == "se_dds") {
+
+    # Load the se object from RDS
+    object_path <- file.path(dir_path, "se.rds")
+
+    if (!file.exists(object_path)) {
+        stop("The se file does not exist: ", object_path)
+    }
+    se <- readRDS(object_path)
+    assign("source_se", se, envir = .parent.frame())
+  }
+
+  if (params$workflow == "dds" || params$workflow == "se_dds") {
+
+    # Load the dds object from RDS
+    object_path <- file.path(dir_path, "dds.rds")
+
+    if (!file.exists(object_path)) {
+        stop("The dds file does not exist: ", object_path)
+    }
+    dds <- readRDS(object_path)
+    assign("source_dds", dds, envir = .parent.frame())
+  }
+
+  # Load the anns object from RDS
+  object_path <- file.path(dir_path, "anns.rds")
+
+  if (!file.exists(object_path)) {
+      stop("The dds file does not exist: ", object_path)
+  }
+  anns <- readRDS(object_path)
+  assign("anns", anns, envir = .parent.frame())
+
+  # Load the metadata file (CSV or Excel) based on params$metadata
+  metadata_path <- params$metadata_file
+
+  if (!file.exists(metadata_path)) {
+      stop("The metadata file does not exist: ", metadata_path)
+  }
+
+  # Determine file type and load accordingly
+  if (grepl("\\.csv$", metadata_path, ignore.case = TRUE)) {
+      metadata <- read.csv(metadata_path, stringsAsFactors = FALSE)
+  } else if (grepl("\\.(xls|xlsx)$", metadata_path, ignore.case = TRUE)) {
+      if (!requireNamespace("readxl", quietly = TRUE)) {
+          stop("The 'readxl' package is required to read Excel files. Please install it.")
       }
-      
-      tryCatch({
-        experiment_metadata <- data.frame(readxl::read_xlsx(params$sample_metadata_file, col_names = TRUE), row.names = 1)
-        assign("experiment_metadata", experiment_metadata, envir = parent.frame())
-        message("experiment metadata loaded and saved in the workspace as dataframe with name 'experiment_metadata'")
-      }, error = function(e) {
-        stop("Failed to load experiment metadata: ", e$message)
-      })
-    
-    if (pluck(params, "load_gse", .default = FALSE)) {
-        tryCatch({
-          gse <- readRDS(file.path("analyses_data", "gse.RDS"))
-          assign("gse", gse, envir = parent.frame())
-          message("GSE object loaded and saved in the workspace as 'gse'")
-        }, error = function(e) {
-          warning("Failed to load gse: ", e$message)
-        })
-    } else message("'load_gse' set to false")
-
-    if (pluck(params, "load_complete_dds", .default = FALSE)) {
-        tryCatch({
-          complete_dds <- readRDS(file.path(params$complete_dds_source))
-          assign("complete_dds", complete_dds, envir = parent.frame())
-          message("main dds object loaded and saved in the workspace as DESeqDataSet with name 'complete_dds'")
-        }, error = function(e) {
-          warning("Failed to load complete_dds: ", e$message)
-        })
-    } else message("'load_complete_dds' set to false")
-
-  } else if (pluck(params, "workflow", .default = "dds_gse") == "dds") {
-
-    tryCatch({
-      experiment_metadata <- data.frame(readxl::read_xlsx(params$sample_metadata_file, col_names = TRUE), row.names = 1)
-      assign("experiment_metadata", experiment_metadata, envir = parent.frame())
-      message("experiment metadata loaded and saved in the workspace as dataframe with name 'experiment_metadata'")
-    }, error = function(e) {
-      stop("Failed to load experiment metadata: ", e$message)
-    })
-
-    tryCatch({
-      se <- loadRDS(file.path("analyses_data", "se.RDS"))
-      assign("se", se, envir = parent.frame())
-      message("se object loaded and saved in the workspace as 'se'")
-    }, error = function(e) {
-      warning("Failed to load se: ", e$message)
-    })
-
+      metadata <- readxl::read_excel(metadata_path)
   } else {
-    stop("Only dds_gse, dds, and se_vdx workflows are supported")
+      stop("Unsupported file format for metadata. Please provide a CSV or Excel file.")
   }
 
-  anns_path <- "analyses_data/anns.RDS"
-  anno_df_path <- "analyses_data/anno_df.RDS"
+  assign("metadata", metadata, envir = .parent.frame())
 
-  if (file.exists(anns_path)) {
-    anns <- readRDS(anns_path)
-    assign("anns", anns, envir = parent.frame())
-  } else {
-    warning("anns not loaded!")
-  }
-
-  if (file.exists(anno_df_path)) {
-    anno_df <- readRDS(anno_df_path)
-    assign("anno_df", anno_df, envir = parent.frame())
-  } else {
-    warning("anno_df not loaded!")
-  }
-
+  message("Workspace preparation complete.")
+  return(TRUE)
 }
-

@@ -1,0 +1,8 @@
+
+# Gene Tonic
+```{r startGeneTonic, eval = FALSE, echo = FALSE}
+# It actually does not work without the results of the enrichment
+gtl <- resuset_to_gtl(myresuSet, "", dds, anns, enrich_algo = "topGO_tbl") 
+GeneTonic(gtl = gtl)
+
+```
