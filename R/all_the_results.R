@@ -12,11 +12,10 @@
 #' performs LFC shrinkage, and generates various result tables and plots.
 #'
 #' @param object A DESeqDataSet object or MArrayLM.
-#' @param resuSet A list to store the results.
+#' @param resuSet A list to which the results will be added.
 #' @param contrast A character vector specifying the contrast.
 #' @param FDR A numeric value specifying the false discovery rate threshold.
-#' @param anns A data frame containing gene annotations with columns `ENSEMBL` and `SYMBOL`.
-#' @param anns A data frame containing additional annotations with columns `ENSEMBL`, `description`, and `chromosome_name`.
+#' @param anns A data frame containing gene annotations (generated with create_annotations)
 #' @param species A character string specifying the species for creating links.
 #'
 #' @return A list containing the processed results, including DESeq2 results,
