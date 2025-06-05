@@ -1,7 +1,7 @@
 
 # helper-functions-rbioinfo
 
-**An R package designed to streamline RNA-seq and bioinformatics analyses by simplifying data handling and report generation.**
+**An R package designed to help with RNA-seq and bioinformatics analyses by simplifying data handling and report generation.**
 
 ---
 
