@@ -3,6 +3,8 @@
 export(alltheresults)
 export(check_params)
 export(create_annotations)
+export(dea_for_report_transcriptomics)
+export(fea_for_report_transcriptomics)
 export(load_results)
 export(prepare_workspace)
 export(save_results)

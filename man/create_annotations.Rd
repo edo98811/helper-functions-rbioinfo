@@ -47,13 +47,17 @@ library(SummarizedExperiment)
 library(org.Mm.eg.db)
 
 # Example SummarizedExperiment object
-se <- SummarizedExperiment(assays = list(counts = matrix(1:4, nrow = 2)),
-                            rowData = DataFrame(ENSEMBL = c("ENSMUSG00000000001", "ENSMUSG00000000003")))
+se <- SummarizedExperiment(
+  assays = list(counts = matrix(1:4, nrow = 2)),
+  rowData = DataFrame(ENSEMBL = c("ENSMUSG00000000001", "ENSMUSG00000000003"))
+)
 
 # Create annotations
 params <- list(species = "Mm")
-annotations <- create_annotations(params, se, source_type = "ENSEMBL", 
-                                   columns = c("SYMBOL", "ENTREZID"))
+annotations <- create_annotations(params, se,
+  source_type = "ENSEMBL",
+  columns = c("SYMBOL", "ENTREZID")
+)
 print(annotations)
 }
 

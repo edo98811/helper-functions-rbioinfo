@@ -55,47 +55,57 @@ load_results <- function(params) {
                      file.path(params$analysis_folder, params$analysis_name), 
                      file.path("analysis_results", params$analysis_name))
 
-  # Check if the workflow matches specific conditions
-  if (params$workflow == "se" || params$workflow == "se_vdx" || params$workflow == "se_dds") {
+  # Validate workflow parameter
+  valid_workflows <- c("se", "se_vdx", "se_dds", "dds", "vdx", "se_dde", "dde")
+  if (!params$workflow %in% valid_workflows) {
+    stop("Invalid workflow type. Accepted values are: ", paste(valid_workflows, collapse = ", "))
+  }
 
-    # Load the se object from RDS
+  # Load se object if the workflow requires it
+  if (params$workflow %in% c("se", "se_vdx", "se_dds", "se_dde", "dde")) {
     object_path <- file.path(dir_path, "se.rds")
-
     if (!file.exists(object_path)) {
-        stop("The se file does not exist: ", object_path)
+      stop("The se file does not exist: ", object_path)
     }
     se <- readRDS(object_path)
     assign("se", se, envir = .parent.frame())
   }
-  if (params$workflow == "dds" || params$workflow == "se_dds") {
 
-    # Load the dds object from RDS
+  # Load the dds object if the workflow requires it
+  if (params$workflow %in% c("dds", "se_dds")) {
     object_path <- file.path(dir_path, "dds.rds")
-
     if (!file.exists(object_path)) {
-        stop("The dds file does not exist: ", object_path)
+      stop("The dds file does not exist: ", object_path)
     }
     dds <- readRDS(object_path)
     assign("dds", dds, envir = .parent.frame())
   }
-  if (params$workflow == "vdx") {
 
-    # Load the vdx object from RDS
-    object_path <- file.path(dir_path, "vdx.rds")
-
+  # Load dde object if the workflow requires it
+  if (params$workflow %in% c("dde", "se_dde")) {
+    object_path <- file.path(dir_path, "dde.rds")
     if (!file.exists(object_path)) {
-        stop("The vdx file does not exist: ", object_path)
+      stop("The dde file does not exist: ", object_path)
+    }
+    dds <- readRDS(object_path)
+    assign("dde", dds, envir = .parent.frame())
+  }
+
+  # Load vdx object if the workflow requires it
+  if (params$workflow == "vdx") {
+    object_path <- file.path(dir_path, "vdx.rds")
+    if (!file.exists(object_path)) {
+      stop("The vdx file does not exist: ", object_path)
     }
     vdx <- readRDS(object_path)
     assign("vdx", vdx, envir = .parent.frame())
   }
-  if (params$run_computations == FALSE) {
 
-    # Load the results object from RDS
+  # Load results if not running computations or if workflow is not dde or se_dde
+  if (params$run_computations == FALSE %% !params$workflow %in% c("dde", "se_dde")) {
     object_path <- file.path(dir_path, "results.rds")
-
     if (!file.exists(object_path)) {
-        stop("The results file does not exist: ", object_path)
+      stop("The results file does not exist: ", object_path)
     }
     results <- readRDS(object_path)
     assign("results", results, envir = .parent.frame())

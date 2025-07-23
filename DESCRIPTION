@@ -18,4 +18,5 @@ Imports:
   htmltools,
   DT,
   htmltools,
-  knitr
+  knitr,
+  DeeDeeExperiment

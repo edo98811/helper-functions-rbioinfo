@@ -9,13 +9,13 @@ alltheresults(object, resuSet, contrast, FDR, anns, species)
 \arguments{
 \item{object}{A DESeqDataSet object or MArrayLM.}
 
-\item{resuSet}{A list to store the results.}
+\item{resuSet}{A list to which the results will be added.}
 
 \item{contrast}{A character vector specifying the contrast.}
 
 \item{FDR}{A numeric value specifying the false discovery rate threshold.}
 
-\item{anns}{A data frame containing additional annotations with columns \code{ENSEMBL}, \code{description}, and \code{chromosome_name}.}
+\item{anns}{A data frame containing gene annotations (generated with create_annotations)}
 
 \item{species}{A character string specifying the species for creating links.}
 }

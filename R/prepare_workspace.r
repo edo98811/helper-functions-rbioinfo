@@ -43,71 +43,92 @@
 prepare_workspace <- function(params) {
 
   # Validate the input parameters
-  if (!is.list(params) || !all(c("workflow", "run_computations", "analysis_folder", "analysis_name", "metadata_file") %in% names(params))) {
-    stop("Invalid parameters provided. Please provide a list with 'workflow', 'run_computations', 'analysis_folder', and 'analysis_name', 'metadata_file'.")
-  }
+  if (!check_params(params)) stop("prepare_workspace: parameters provided.")
 
   # Determine the directory path based on the provided parameters
-  dir_path <- ifelse(params$analysis_folder, 
-                     file.path(params$analysis_folder), 
-                     file.path("analysis_results"))
-
-  
+  dir_path <- params$analysis_name
   # Initialize workspace
   message("Initializing workspace...")
-  if (params$workflow == "se" || params$workflow == "se_vdx" || params$workflow == "se_dds") {
 
-    # Load the se object from RDS
-    object_path <- file.path(dir_path, "se.rds")
+  # Load the source object from RDS
+  object_path <- file.path(params$source_object)
 
-    if (!file.exists(object_path)) {
-        stop("The se file does not exist: ", object_path)
-    }
-    se <- readRDS(object_path)
-    assign("source_se", se, envir = .parent.frame())
+  if (!file.exists(object_path)) {
+    stop("The se file does not exist: ", object_path)
   }
 
-  if (params$workflow == "dds" || params$workflow == "se_dds") {
+  source_object <- readRDS(object_path)
+  assign("source_object", source_object, envir = parent.frame())
 
-    # Load the dds object from RDS
-    object_path <- file.path(dir_path, "dds.rds")
+  # # Load the se object if the workflow requires it
+  # if (params$workflow %in% c("se", "se_vdx", "se_dds", "se_dde")) {
 
-    if (!file.exists(object_path)) {
-        stop("The dds file does not exist: ", object_path)
-    }
-    dds <- readRDS(object_path)
-    assign("source_dds", dds, envir = .parent.frame())
-  }
+  #   # Load the se object from RDS
+  #   object_path <- file.path(dir_path, "se.rds")
+
+  #   if (!file.exists(object_path)) {
+  #       stop("The se file does not exist: ", object_path)
+  #   }
+  #   se <- readRDS(object_path)
+  #   assign("source_se", se, envir = .parent.frame())
+  # }
+
+  # # Load the dds object if the workflow requires it
+  # if (params$workflow %in% c("dds")) {
+
+  #   # Load the dds object from RDS
+  #   object_path <- file.path(dir_path, "dds.rds")
+
+  #   if (!file.exists(object_path)) {
+  #       stop("The dds file does not exist: ", object_path)
+  #   }
+  #   dds <- readRDS(object_path)
+  #   assign("source_dds", dds, envir = .parent.frame())
+  # }
+
+  # # Load the dds object if the workflow requires it
+  # if (params$workflow %in% c("dde")) {
+
+  #   # Load the dds object from RDS
+  #   object_path <- file.path(dir_path, "dde.rds")
+
+  #   if (!file.exists(object_path)) {
+  #       stop("The dde file does not exist: ", object_path)
+  #   }
+  #   dds <- readRDS(object_path)
+  #   assign("source_dde", dde, envir = .parent.frame())
+  # }
 
   # Load the anns object from RDS
   object_path <- file.path(dir_path, "anns.rds")
 
   if (!file.exists(object_path)) {
-      stop("The dds file does not exist: ", object_path)
+    warning("The dds file does not exist: ", object_path)
+  } else {
+    anns <- readRDS(object_path)
+    assign("anns", anns, envir = parent.frame())
   }
-  anns <- readRDS(object_path)
-  assign("anns", anns, envir = .parent.frame())
 
   # Load the metadata file (CSV or Excel) based on params$metadata
   metadata_path <- params$metadata_file
 
   if (!file.exists(metadata_path)) {
-      stop("The metadata file does not exist: ", metadata_path)
+    warning("The metadata file does not exist: ", metadata_path)
   }
 
   # Determine file type and load accordingly
   if (grepl("\\.csv$", metadata_path, ignore.case = TRUE)) {
-      metadata <- read.csv(metadata_path, stringsAsFactors = FALSE)
+    metadata <- read.csv(metadata_path, stringsAsFactors = FALSE)
   } else if (grepl("\\.(xls|xlsx)$", metadata_path, ignore.case = TRUE)) {
-      if (!requireNamespace("readxl", quietly = TRUE)) {
-          stop("The 'readxl' package is required to read Excel files. Please install it.")
-      }
-      metadata <- readxl::read_excel(metadata_path)
+    if (!requireNamespace("readxl", quietly = TRUE)) {
+      stop("The 'readxl' package is required to read Excel files. Please install it.")
+    }
+    metadata <- readxl::read_excel(metadata_path)
   } else {
-      stop("Unsupported file format for metadata. Please provide a CSV or Excel file.")
+    stop("Unsupported file format for metadata. Please provide a CSV or Excel file.")
   }
 
-  assign("metadata", metadata, envir = .parent.frame())
+  assign("metadata", metadata, envir = parent.frame())
 
   message("Workspace preparation complete.")
   return(TRUE)
