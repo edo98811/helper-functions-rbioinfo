@@ -103,7 +103,7 @@ prepare_workspace <- function(params) {
   object_path <- file.path(dir_path, "anns.rds")
 
   if (!file.exists(object_path)) {
-    warning("The dds file does not exist: ", object_path)
+    warning("The anns file does not exist: ", object_path)
   } else {
     anns <- readRDS(object_path)
     assign("anns", anns, envir = parent.frame())
