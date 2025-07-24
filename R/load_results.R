@@ -71,4 +71,5 @@ load_results <- function(params) {
       message(sprintf("Loaded 'results' object from %s", object_path))
     }
   }
+}
 
