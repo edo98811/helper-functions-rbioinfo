@@ -47,23 +47,23 @@
 #' @importFrom org.Hs.eg.db org.Hs.eg.db
 #' @export
 
-create_annotations <- function(params, se, source_type = "ENSEMBL", columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"), force_creation = FALSE) {
-  if (purrr::pluck(params, "create_annotation_df", .default = FALSE)) {
+create_annotations <- function(params, keys_list, source_type = "ENSEMBL", columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"), force_creation = FALSE) {
+
+  if (!purrr::pluck(params, "create_annotation_df", .default = FALSE)) {
     message("create_annotation not run")
-    return()
+    return(NULL)
   }
 
   species <- params$species
 
   # Check if annotations already exist in the parent environment and return them if force_creation is FALSE
-  if (exists("anns", envir = parent.frame()) && !force_creation) {
-    message("Annotations already exist in the parent environment. Returning existing annotations...")
-    return(get("anns", envir = parent.frame()))
-  }
+  # if (exists("anns", envir = parent.frame()) && !force_creation) {
+  #   message("Annotations already exist in the parent environment. Returning existing annotations...")
+  #   return(get("anns", envir = parent.frame()))
+  # }
 
-  # Validate that the input object is a SummarizedExperiment object
-  if (!inherits(se, "SummarizedExperiment")) {
-    stop("The provided object is not a SummarizedExperiment object.")
+  if (!is.character(keys_list) || !is.vector(keys_list)) {
+    stop("keys_list must be a character vector (vector of strings).")
   }
 
   # Select the appropriate organism database based on the species parameter
@@ -101,13 +101,12 @@ create_annotations <- function(params, se, source_type = "ENSEMBL", columns = c(
     cbind.data.frame,
     lapply(columns, function(dest_col) {
       create_column(keys_list, source_type, dest_col, orgdb)
-    }),
-    stringsAsFactors = FALSE
+    })
   )
 
   # to preserve the names of the rows in the original SummarizedExperiment object and have tehe right colnames
   colnames(anns) <- columns
-  rownames(anns) <- rownames(se)
+  rownames(anns) <- keys_list
 
   return(anns)
 }

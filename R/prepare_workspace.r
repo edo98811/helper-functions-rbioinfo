@@ -41,12 +41,11 @@
 # Description: Skeleton for a function to prepare the workspace for bioinformatics analysis.
 
 prepare_workspace <- function(params) {
-
   # Validate the input parameters
-  if (!check_params(params)) stop("prepare_workspace: parameters provided.")
+  if (!check_params(params)) stop("prepare_workspace: wrong parameters provided.")
 
   # Determine the directory path based on the provided parameters
-  dir_path <- params$analysis_name
+  dir_path <- file.path("analyses_results", params$analysis_name)
   # Initialize workspace
   message("Initializing workspace...")
 
@@ -55,10 +54,11 @@ prepare_workspace <- function(params) {
 
   if (!file.exists(object_path)) {
     stop("The se file does not exist: ", object_path)
+  } else {
+    source_object <- readRDS(object_path)
+    assign("source_object", source_object, envir = parent.frame())
+    message(sprintf("Loaded 'source_object' from %s", object_path))
   }
-
-  source_object <- readRDS(object_path)
-  assign("source_object", source_object, envir = parent.frame())
 
   # # Load the se object if the workflow requires it
   # if (params$workflow %in% c("se", "se_vdx", "se_dds", "se_dde")) {
@@ -107,6 +107,7 @@ prepare_workspace <- function(params) {
   } else {
     anns <- readRDS(object_path)
     assign("anns", anns, envir = parent.frame())
+    message(sprintf("Loaded 'anns' object from %s", object_path))
   }
 
   # Load the metadata file (CSV or Excel) based on params$metadata
@@ -124,6 +125,7 @@ prepare_workspace <- function(params) {
       stop("The 'readxl' package is required to read Excel files. Please install it.")
     }
     metadata <- readxl::read_excel(metadata_path)
+    message(sprintf("Loaded 'metadata' object from %s", metadata_path))
   } else {
     stop("Unsupported file format for metadata. Please provide a CSV or Excel file.")
   }
@@ -131,5 +133,4 @@ prepare_workspace <- function(params) {
   assign("metadata", metadata, envir = parent.frame())
 
   message("Workspace preparation complete.")
-  return(TRUE)
 }

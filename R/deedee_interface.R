@@ -33,8 +33,8 @@ dea_for_report_transcriptomics <- function(dea_table, anns, interactive = TRUE, 
       return(NULL)
     }
   }
-
   message("Extracting tables...")
+  dea_table <- dea_table[rowSums(is.na(dea_table)) == 0, ]
   if (alpha < 1) dea_table <- dea_table[dea_table$padj < alpha, ]
   # dea_table$ENSEMBL <- gsub("\\.[0-9]*$", "", rownames(dea_table))
   dea_table$ENSEMBL <- gsub("\\.[0-9]*$", "", rownames(dea_table))
@@ -68,7 +68,7 @@ dea_for_report_transcriptomics <- function(dea_table, anns, interactive = TRUE, 
 #' This function filters a differential expression analysis (DEA) table based on an alpha threshold,
 #' optionally rounds numeric columns for interactive reporting, and returns the filtered table.
 #'
-#' @param dea_table A data.frame containing differential expression results. Must include a column named \code{padj}.
+#' @param fea_table A data.frame containing differential expression results. Must include a column named \code{padj}.
 #' @param anns Annotations associated with the features (not used in current implementation).
 #' @param interactive Logical. If \code{TRUE}, numeric columns are rounded to 4 decimal places for reporting.
 #' @param alpha Numeric threshold between 0 and 1 for adjusted p-value (\code{padj}) filtering.
@@ -77,34 +77,39 @@ dea_for_report_transcriptomics <- function(dea_table, anns, interactive = TRUE, 
 #' @return A filtered and optionally formatted \code{data.frame} of differentially expressed features, or \code{NULL} if no features pass the threshold.
 #'
 #' @export
-fea_for_report_transcriptomics <- function(dea_table, anns, interactive = TRUE, alpha = 1, value_column) {
+fea_for_report_transcriptomics <- function(fea_table, anns, interactive = TRUE, alpha = 1, pvalue_column = "p.value_elim") {
   if (alpha <= 1 && alpha >= 0) {
     message("alpha threshold is valid.")
   } else {
     stop("alpha threshold must be between 0 and 1.")
   }
 
-  if (inherits(dea_table, "data.frame")) {
-    if (nrow(dea_table) == 0) {
+  if (inherits(fea_table, "data.frame")) {
+    if (nrow(fea_table) == 0) {
       message("No features found.")
       return(NULL)
     }
   }
 
-  message("Extracting tables...")
-  if (alpha < 1) dea_table <- dea_table[dea_table$padj < alpha, ]
-
-  if (interactive) {
-    num_cols <- sapply(dea_table, is.numeric)
-    dea_table[, num_cols] <- lapply(dea_table[, num_cols], round, 4)
+  if (!inherits(anns, "data.frame")) {
+    stop("anns must be a data.frame.")
   }
 
-  if (nrow(dea_table) == 0) {
+  message("Extracting tables...")
+  fea_table <- fea_table[rowSums(is.na(fea_table)) == 0, ]
+  if (alpha < 1) fea_table <- fea_table[fea_table[[pvalue_column]] < alpha, ]
+
+  if (interactive) {
+    num_cols <- sapply(fea_table, is.numeric)
+    fea_table[, num_cols] <- lapply(fea_table[, num_cols], round, 4)
+  }
+
+  if (nrow(fea_table) == 0) {
     warning("No differentially expressed genes found after applying the alpha threshold.")
     return(NULL)
   }
 
-  return(dea_table)
+  return(fea_table)
 }
 
 #' Display an interactive table with a custom caption
@@ -124,31 +129,40 @@ show_interactive_table <- function(table, title, knitting = FALSE) {
   if (nrow(table) == 0) {
     cat(paste0("The table is empty. No results to display for ", title, "."))
   } else {
-    # If in report, use knit_print to format the table
+    # Create the datatable with scrollX
+    dt <- DT::datatable(
+      table,
+      escape = FALSE,
+      rownames = FALSE,
+      options = list(scrollX = TRUE),  # enables horizontal scroll in DT
+      caption = htmltools::tags$caption(
+        style = "caption-side: top; color:black; font-size: 2em; text-align: left;",
+        title
+      )
+    )
+
+    # Wrap the datatable in a scrollable div
+    scrollable_div <- htmltools::div(
+      style = "overflow-x: auto; width: 100%;",
+      dt
+    )
+
+    # Output based on context
     if (knitting) {
-      cat(knitr::knit_print(DT::datatable(
-        table,
-        escape = FALSE,
-        rownames = FALSE,
-        caption = htmltools::tags$caption(
-          style = "caption-side: top; color:black; font-size: 2em",
-          title
-        )
-      )))
+      tryCatch(
+        {
+          cat(knitr::knit_print(scrollable_div))
+        },
+        error = function(e) {
+          message("Error in knitting the table. Are you creating a report or running the code in RStudio? If you're in RStudio, set knitting = FALSE. Error: ", e$message)
+        }
+      )
     } else {
-      # Otherwise, print the table directly
-      print(DT::datatable(
-        table,
-        escape = FALSE,
-        rownames = FALSE,
-        caption = htmltools::tags$caption(
-          style = "caption-side: top; color:black; font-size: 2em",
-          title
-        )
-      ))
+      print(scrollable_div)
     }
   }
 }
+
 
 # functions to make results nicer
 createLinkGO <- function(val) {

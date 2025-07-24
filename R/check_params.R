@@ -53,6 +53,12 @@ check_params <- function(params_list) {
     return(FALSE)
   }
 
+  # Validate workflow parameter
+  valid_workflows <- c("se", "se_vdx", "se_dds", "dds", "vdx", "se_dde", "dde")
+  if (!params$workflow %in% valid_workflows) {
+    stop("Invalid workflow type. Accepted values are: ", paste(valid_workflows, collapse = ", "))
+  }
+
   # Validate specific values for subset_object and species
   if (!is.logical(params_list$subset_object)) {
     warning("The 'subset_object' parameter must be TRUE or FALSE.")
