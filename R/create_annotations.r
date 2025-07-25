@@ -49,10 +49,10 @@
 
 create_annotations <- function(params, keys_list, source_type = "ENSEMBL", columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"), force_creation = FALSE) {
 
-  if (!purrr::pluck(params, "create_annotation_df", .default = FALSE)) {
-    message("create_annotation not run")
-    return(NULL)
-  }
+  # if (!purrr::pluck(params, "create_annotation_df", .default = FALSE)) {
+  #   message("create_annotation not run")
+  #   return(NULL)
+  # }
 
   species <- params$species
 
