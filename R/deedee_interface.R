@@ -40,6 +40,11 @@ dea_for_report_transcriptomics <- function(dea_table, anns, interactive = TRUE, 
   dea_table$ENSEMBL <- gsub("\\.[0-9]*$", "", rownames(dea_table))
   dea_table$SYMBOL <- anns$SYMBOL[match(dea_table$ENSEMBL, anns$ENSEMBL)]
 
+  if (nrow(dea_table) == 0) {
+    warning("No differentially expressed genes found after applying the alpha threshold.")
+    return(NULL)
+  }
+
   if (interactive) {
     if ("ENSEMBL" %in% colnames(dea_table)) {
       dea_table$ENSEMBL <- createLinkENS(dea_table$ENSEMBL, species = species)
@@ -53,11 +58,6 @@ dea_for_report_transcriptomics <- function(dea_table, anns, interactive = TRUE, 
 
     num_cols <- sapply(dea_table, is.numeric)
     dea_table[, num_cols] <- lapply(dea_table[, num_cols], round, 4)
-  }
-
-  if (nrow(dea_table) == 0) {
-    warning("No differentially expressed genes found after applying the alpha threshold.")
-    return(NULL)
   }
 
   return(dea_table)
@@ -97,16 +97,17 @@ fea_for_report_transcriptomics <- function(fea_table, anns, interactive = TRUE, 
 
   message("Extracting tables...")
   fea_table <- fea_table[rowSums(is.na(fea_table)) == 0, ]
+
+  if (nrow(fea_table) == 0) {
+    warning("No differentially expressed genes found after applying the alpha threshold.")
+    return(NULL)
+  }
+
   if (alpha < 1) fea_table <- fea_table[fea_table[[pvalue_column]] < alpha, ]
 
   if (interactive) {
     num_cols <- sapply(fea_table, is.numeric)
     fea_table[, num_cols] <- lapply(fea_table[, num_cols], round, 4)
-  }
-
-  if (nrow(fea_table) == 0) {
-    warning("No differentially expressed genes found after applying the alpha threshold.")
-    return(NULL)
   }
 
   return(fea_table)
@@ -125,17 +126,31 @@ fea_for_report_transcriptomics <- function(fea_table, anns, interactive = TRUE, 
 #' @return Displays the interactive table or prints a message if the table is empty.
 #' @export
 show_interactive_table <- function(table, title, knitting = FALSE) {
-  
   # Check if the table is empty
-  if (nrow(table) == 0) {
-    cat(paste0("The table is empty. No results to display for ", title, "."))
+  if (is.null(table)) {
+    cat("The input table is NULL. Maybe there are no identified de?")
+    return(
+      htmltools::div(
+        style = "color: red; font-weight: bold; margin: 10px 0;",
+        "The input table is NULL. Maybe there are no identified de?"
+      )
+    )
+  } else if (!inherits(table, "data.frame")) {
+    stop("The input must be a data frame.")
+  } else if (nrow(table) == 0) {
+    return(
+      htmltools::div(
+        style = "color: red; font-weight: bold; margin: 10px 0;",
+        paste0("The table is empty. No results to display for ", title, ".")
+      )
+    )
   } else {
     # Create the datatable with scrollX
     dt <- DT::datatable(
       table,
       escape = FALSE,
       rownames = FALSE,
-      options = list(scrollX = TRUE),  # enables horizontal scroll in DT
+      options = list(scrollX = TRUE), # enables horizontal scroll in DT
       caption = htmltools::tags$caption(
         style = "caption-side: top; color:black; font-size: 2em; text-align: left;",
         title
@@ -183,4 +198,19 @@ createLinkGeneSymbol <- function(val) {
 
 createLinkUNIPROT <- function(val) {
   sprintf('<a href="https://www.uniprot.org/uniprotkb/%s/entry" target="_blank" class="btn btn-primary"">%s</a>', val, val)
+}
+
+#' get_fea_list but does not fail when empty
+#'
+#' This is a wrapper to the get_fea_list function
+#'
+#' @param dde A DeeDeeExperiment object
+#'
+#' @return A list of the available tables in the fea slot
+#'
+#' @export
+get_fea_list_report <- function(dde, ...) {
+  tryCatch({return(get_fea_list(dde, ...))},
+  error = {return(NULL)}
+  )
 }
