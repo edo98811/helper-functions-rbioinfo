@@ -125,6 +125,7 @@ fea_for_report_transcriptomics <- function(fea_table, anns, interactive = TRUE, 
 #' @return Displays the interactive table or prints a message if the table is empty.
 #' @export
 show_interactive_table <- function(table, title, knitting = FALSE) {
+  
   # Check if the table is empty
   if (nrow(table) == 0) {
     cat(paste0("The table is empty. No results to display for ", title, "."))
@@ -158,7 +159,7 @@ show_interactive_table <- function(table, title, knitting = FALSE) {
         }
       )
     } else {
-      print(scrollable_div)
+      print(dt)
     }
   }
 }
