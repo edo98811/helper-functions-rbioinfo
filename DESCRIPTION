@@ -18,6 +18,5 @@ Imports:
   org.Mm.eg.db,
   htmltools,
   DT,
-  htmltools,
   knitr,
   DeeDeeExperiment
