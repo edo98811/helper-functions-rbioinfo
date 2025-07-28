@@ -4,7 +4,7 @@
 \alias{check_params}
 \title{Check that the parameters in params are valid}
 \usage{
-check_params(params)
+check_params(params_list)
 }
 \arguments{
 \item{params}{A named list containing parameters to be validated.

@@ -6,7 +6,7 @@
 \usage{
 create_annotations(
   params,
-  se,
+  keys_list,
   source_type = "ENSEMBL",
   columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"),
   force_creation = FALSE
@@ -16,8 +16,6 @@ create_annotations(
 \item{params}{A list containing parameters for the function. Must include the \code{species} key,
 which specifies the species. Supported values are \code{"Mm"} for mouse and \code{"Hs"} for human.}
 
-\item{se}{A \code{SummarizedExperiment} object. The row names of this object are used as keys for annotation mapping.}
-
 \item{source_type}{A character string specifying the type of identifier used in the row names of \code{se}.
 Supported values include \code{"ENSEMBL"}, \code{"SYMBOL"}, \code{"UNIPROT"}, etc.}
 
@@ -26,6 +24,8 @@ Default is \code{c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT")}.}
 
 \item{force_creation}{A logical value indicating whether to force the creation of annotations
 even if they already exist in the parent environment. Default is \code{FALSE}.}
+
+\item{se}{A \code{SummarizedExperiment} object. The row names of this object are used as keys for annotation mapping.}
 }
 \value{
 A data frame containing the requested annotations. The row names of the returned data frame

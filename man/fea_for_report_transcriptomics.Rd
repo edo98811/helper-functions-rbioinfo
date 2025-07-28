@@ -5,15 +5,15 @@
 \title{Filter and Format Differential Expression Analysis Table for Reporting}
 \usage{
 fea_for_report_transcriptomics(
-  dea_table,
+  fea_table,
   anns,
   interactive = TRUE,
   alpha = 1,
-  value_column
+  pvalue_column = "p.value_elim"
 )
 }
 \arguments{
-\item{dea_table}{A data.frame containing differential expression results. Must include a column named \code{padj}.}
+\item{fea_table}{A data.frame containing differential expression results. Must include a column named \code{padj}.}
 
 \item{anns}{Annotations associated with the features (not used in current implementation).}
 
