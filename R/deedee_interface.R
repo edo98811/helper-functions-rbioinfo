@@ -124,6 +124,7 @@ fea_for_report_transcriptomics <- function(fea_table, anns, interactive = TRUE, 
 #' @param knitting Logical; if \code{TRUE}, formats the table for knitting (e.g., RMarkdown).
 #'
 #' @return Displays the interactive table or prints a message if the table is empty.
+#' 
 #' @export
 show_interactive_table <- function(table, title, knitting = FALSE) {
   # Check if the table is empty
