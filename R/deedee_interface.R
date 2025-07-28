@@ -214,3 +214,18 @@ get_fea_list_report <- function(dde, ...) {
   error = {return(NULL)}
   )
 }
+
+#' get_dea_list but does not fail when empty
+#'
+#' This is a wrapper to the get_dea_list function
+#'
+#' @param dde A DeeDeeExperiment object
+#'
+#' @return A list of the available tables in the fea slot
+#'
+#' @export
+get_dea_list_report <- function(dde, ...) {
+  tryCatch({return(get_dea_list(dde, ...))},
+  error = {return(NULL)}
+  )
+}
