@@ -5,14 +5,6 @@
 #' into the parent environment. If `run_computations` is set to `TRUE`, the loading operations are skipped.
 #'
 #' @param params A list containing the following elements:
-#'   \itemize{
-#'     \item \code{workflow}: A character string specifying the workflow type. Accepted values are 
-#'     \code{"se"}, \code{"se_vdx"}, \code{"se_dds"}, \code{"dds"}, or \code{"vdx"}.
-#'     \item \code{run_computations}: A logical value indicating whether computations should be run 
-#'     instead of loading results.
-#'     \item \code{analysis_folder}: A character string specifying the folder containing analysis results.
-#'     \item \code{analysis_name}: A character string specifying the name of the analysis.
-#'   }
 #'
 #' @return A character string indicating the status of the operation:
 #'   \itemize{
