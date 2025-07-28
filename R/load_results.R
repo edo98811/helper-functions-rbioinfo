@@ -1,4 +1,42 @@
-# Function to check multiple conditions and return a message based on them
+#' Load Results Based on Workflow and Parameters
+#'
+#' This function loads data objects from RDS files based on the specified workflow and parameters.
+#' It validates the input parameters, determines the directory path, and loads the appropriate objects
+#' into the parent environment. If `run_computations` is set to `TRUE`, the loading operations are skipped.
+#'
+#' @param params A list containing the following elements:
+#'   \itemize{
+#'     \item \code{workflow}: A character string specifying the workflow type. Accepted values are 
+#'     \code{"se"}, \code{"se_vdx"}, \code{"se_dds"}, \code{"dds"}, or \code{"vdx"}.
+#'     \item \code{run_computations}: A logical value indicating whether computations should be run 
+#'     instead of loading results.
+#'     \item \code{analysis_folder}: A character string specifying the folder containing analysis results.
+#'     \item \code{analysis_name}: A character string specifying the name of the analysis.
+#'   }
+#'
+#' @return A character string indicating the status of the operation:
+#'   \itemize{
+#'     \item \code{"run_computations is TRUE. Skipping loading of results"} if \code{run_computations} is \code{TRUE}.
+#'     \item \code{"Objects loaded and assigned to parent environment."} if the objects are successfully loaded.
+#'   }
+#'
+#' @details
+#' The function checks the existence of required RDS files based on the workflow type and loads the corresponding
+#' objects (\code{se}, \code{dds}, \code{vdx}, or \code{results}) into the parent environment. If any required file
+#' is missing, an error is raised.
+#'
+#' @examples
+#' \dontrun{
+#' params <- list(
+#'   workflow = "se",
+#'   run_computations = FALSE,
+#'   analysis_folder = "path/to/folder",
+#'   analysis_name = "example_analysis"
+#' )
+#' load_results(params)
+#' }
+#'
+#' @export
 load_results <- function(params) {
   # Validate the input parameters
   if (!check_params(params)) stop("load_results: wrong parameters provided.")
