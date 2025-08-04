@@ -3,6 +3,7 @@
 export(alltheresults)
 export(check_params)
 export(create_annotations)
+export(dea_for_report_metabolomics)
 export(dea_for_report_transcriptomics)
 export(fea_for_report_transcriptomics)
 export(get_dea_list_report)

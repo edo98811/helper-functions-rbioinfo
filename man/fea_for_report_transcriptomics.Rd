@@ -6,7 +6,6 @@
 \usage{
 fea_for_report_transcriptomics(
   fea_table,
-  anns,
   interactive = TRUE,
   alpha = 1,
   pvalue_column = "p.value_elim"
@@ -15,11 +14,11 @@ fea_for_report_transcriptomics(
 \arguments{
 \item{fea_table}{A data.frame containing differential expression results. Must include a column named \code{padj}.}
 
-\item{anns}{Annotations associated with the features (not used in current implementation).}
-
 \item{interactive}{Logical. If \code{TRUE}, numeric columns are rounded to 4 decimal places for reporting.}
 
 \item{alpha}{Numeric threshold between 0 and 1 for adjusted p-value (\code{padj}) filtering.}
+
+\item{anns}{Annotations associated with the features (not used in current implementation).}
 
 \item{value_column}{Name of the column containing values of interest (not used in current implementation).}
 }
