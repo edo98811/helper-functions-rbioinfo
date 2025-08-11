@@ -50,7 +50,6 @@
 #'
 #' @export
 save_results <- function(params, objects) {
-
   # Validate the input parameters
   if (!check_params(params)) stop("save_results: wrong parameters provided.")
 
@@ -59,13 +58,13 @@ save_results <- function(params, objects) {
     stop("Invalid objects provided. Please provide a list of objects to save.")
   }
 
-  # Validate that object names are valid
-  valid_object_names <- c("se", "dds", "vdx", "results", "dde", "anns")
-  invalid_objects <- setdiff(names(objects), valid_object_names)
-  
-  if (length(invalid_objects) > 0) {
-    warning(sprintf("The following objects are not valid and will not be saved: %s", paste(invalid_objects, collapse = ", ")))
-  }
+  # # Validate that object names are valid
+  # valid_object_names <- c("se", "dds", "vdx", "results", "dde", "anns")
+  # invalid_objects <- setdiff(names(objects), valid_object_names)
+
+  # if (length(invalid_objects) > 0) {
+  #   warning(sprintf("The following objects are not valid and will not be saved: %s", paste(invalid_objects, collapse = ", ")))
+  # }
 
   # Determine the directory path based on the provided parameters
   dir_path <- file.path("analyses_results", params$analysis_name)
@@ -141,4 +140,13 @@ save_results <- function(params, objects) {
     }
   }
 
+  # Save any remaining objects that haven't been handled explicitly
+  handled_objects <- c("se", "dds", "vdx", "dde", "results", "anns")
+  remaining_objects <- setdiff(names(objects), handled_objects)
+
+  for (obj_name in remaining_objects) {
+    object_path <- file.path(dir_path, paste0(obj_name, ".rds"))
+    saveRDS(objects[[obj_name]], object_path)
+    message(sprintf("Saved '%s' object to %s", obj_name, object_path))
+  }
 }
