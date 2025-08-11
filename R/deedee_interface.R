@@ -148,7 +148,9 @@ fea_for_report_transcriptomics <- function(fea_table, interactive = TRUE, alpha 
   } else {
     stop("alpha threshold must be between 0 and 1.")
   }
-
+  if (is.null(fea_table)) {
+    return(NULL)
+  }
   if (inherits(fea_table, "data.frame")) {
     if (nrow(fea_table) == 0) {
       message("No features found.")
