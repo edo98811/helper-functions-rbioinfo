@@ -44,10 +44,9 @@ load_results <- function(params) {
 
   files_to_load <- list.files(dir_path)
   for (file in files_to_load) {
-
-    object <- readRDS(file)
+    object <- readRDS(file.path(dir_path, file))
     var_name <- sub("\\.rds$", "", file)
-    assign(var_name, se, envir = parent.frame())
+    assign(var_name, object, envir = parent.frame())
   }
 
   # # Load se object if the workflow requires it
