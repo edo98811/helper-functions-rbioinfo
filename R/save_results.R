@@ -144,7 +144,7 @@ save_results <- function(params, objects) {
   # handled_objects <- c("se", "dds", "vdx", "dde", "results", "anns")
   # remaining_objects <- setdiff(names(objects), handled_objects)
 
-  for (obj_name in remaining_objects) {
+  for (obj_name in names(objects)) {
     object_path <- file.path(dir_path, paste0(obj_name, ".rds"))
     saveRDS(objects[[obj_name]], object_path)
     message(sprintf("Saved '%s' object to %s", obj_name, object_path))
