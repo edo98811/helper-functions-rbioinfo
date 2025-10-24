@@ -119,7 +119,6 @@ dea_for_report_metabolomics <- function(dea_table, rownames = "KEGG", interactiv
   }
 
   if (interactive) {
-
     num_cols <- sapply(dea_table, is.numeric)
     dea_table[, num_cols] <- lapply(dea_table[, num_cols], round, 4)
   }
@@ -191,7 +190,7 @@ fea_for_report_transcriptomics <- function(fea_table, interactive = TRUE, alpha 
 #' @param knitting Logical; if \code{TRUE}, formats the table for knitting (e.g., RMarkdown).
 #'
 #' @return Displays the interactive table or prints a message if the table is empty.
-#' 
+#'
 #' @export
 show_interactive_table <- function(table, title, knitting = FALSE) {
   # Check if the table is empty
@@ -278,8 +277,14 @@ createLinkUNIPROT <- function(val) {
 #'
 #' @export
 get_fea_list_report <- function(dde, ...) {
-  tryCatch({return(get_fea_list(dde, ...))},
-  error = {return(NULL)}
+  tryCatch(
+    {
+      return(getFEAList(dde, ...))
+    },
+    error = {
+      warning("No results found in FEA slot.")
+      return(NULL)
+    }
   )
 }
 
@@ -293,7 +298,13 @@ get_fea_list_report <- function(dde, ...) {
 #'
 #' @export
 get_dea_list_report <- function(dde, ...) {
-  tryCatch({return(get_dea_list(dde, ...))},
-  error = {return(NULL)}
+  tryCatch(
+    {
+      return(getDEAList(dde, ...))
+    },
+    error = {
+      warning("No results found in DEA slot.")
+      return(NULL)
+    }
   )
 }

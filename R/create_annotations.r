@@ -47,20 +47,18 @@
 #' @importFrom org.Hs.eg.db org.Hs.eg.db
 #' @export
 
-create_annotations <- function(params, keys_list, source_type = "ENSEMBL", columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"), force_creation = FALSE) {
+create_annotations <- function(params, keys_list, source_type = "ENSEMBL", columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"), object_name = "anns") {
 
   # if (!purrr::pluck(params, "create_annotation_df", .default = FALSE)) {
   #   message("create_annotation not run")
   #   return(NULL)
   # }
+  if(params$create_annotation_df == FALSE){
+    message("create_annotation not run")
+    return(NULL)
+  }
 
   species <- params$species
-
-  # Check if annotations already exist in the parent environment and return them if force_creation is FALSE
-  # if (exists("anns", envir = parent.frame()) && !force_creation) {
-  #   message("Annotations already exist in the parent environment. Returning existing annotations...")
-  #   return(get("anns", envir = parent.frame()))
-  # }
 
   if (!is.character(keys_list) || !is.vector(keys_list)) {
     stop("keys_list must be a character vector (vector of strings).")
@@ -108,6 +106,7 @@ create_annotations <- function(params, keys_list, source_type = "ENSEMBL", colum
   colnames(anns) <- columns
   rownames(anns) <- keys_list
 
+  assign(object_name, anns, envir = parent.frame())
   return(anns)
 }
 

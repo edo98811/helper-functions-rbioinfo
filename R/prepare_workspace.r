@@ -59,46 +59,7 @@ prepare_workspace <- function(params) {
     assign("source_object", source_object, envir = parent.frame())
     message(sprintf("Loaded 'source_object' from %s", object_path))
   }
-
-  # # Load the se object if the workflow requires it
-  # if (params$workflow %in% c("se", "se_vdx", "se_dds", "se_dde")) {
-
-  #   # Load the se object from RDS
-  #   object_path <- file.path(dir_path, "se.rds")
-
-  #   if (!file.exists(object_path)) {
-  #       stop("The se file does not exist: ", object_path)
-  #   }
-  #   se <- readRDS(object_path)
-  #   assign("source_se", se, envir = .parent.frame())
-  # }
-
-  # # Load the dds object if the workflow requires it
-  # if (params$workflow %in% c("dds")) {
-
-  #   # Load the dds object from RDS
-  #   object_path <- file.path(dir_path, "dds.rds")
-
-  #   if (!file.exists(object_path)) {
-  #       stop("The dds file does not exist: ", object_path)
-  #   }
-  #   dds <- readRDS(object_path)
-  #   assign("source_dds", dds, envir = .parent.frame())
-  # }
-
-  # # Load the dds object if the workflow requires it
-  # if (params$workflow %in% c("dde")) {
-
-  #   # Load the dds object from RDS
-  #   object_path <- file.path(dir_path, "dde.rds")
-
-  #   if (!file.exists(object_path)) {
-  #       stop("The dde file does not exist: ", object_path)
-  #   }
-  #   dds <- readRDS(object_path)
-  #   assign("source_dde", dde, envir = .parent.frame())
-  # }
-
+  
   # Load the anns object from RDS
   object_path <- file.path(dir_path, "anns.rds")
 

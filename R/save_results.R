@@ -58,14 +58,6 @@ save_results <- function(params, objects) {
     stop("Invalid objects provided. Please provide a list of objects to save.")
   }
 
-  # # Validate that object names are valid
-  # valid_object_names <- c("se", "dds", "vdx", "results", "dde", "anns")
-  # invalid_objects <- setdiff(names(objects), valid_object_names)
-
-  # if (length(invalid_objects) > 0) {
-  #   warning(sprintf("The following objects are not valid and will not be saved: %s", paste(invalid_objects, collapse = ", ")))
-  # }
-
   # Determine the directory path based on the provided parameters
   dir_path <- file.path("analyses_results", params$analysis_name)
 
@@ -73,76 +65,6 @@ save_results <- function(params, objects) {
   if (!dir.exists(dir_path)) {
     dir.create(dir_path, recursive = TRUE)
   }
-
-  # # Save the se object if the workflow matches specific conditions
-  # if (params$workflow == "se" || params$workflow == "se_vdx" || params$workflow == "se_dds") {
-  #   if (!is.null(objects$se)) {
-  #     object_path <- file.path(dir_path, "se.rds")
-  #     saveRDS(objects$se, object_path)
-  #     message(sprintf("Saved 'se' object to %s", object_path))
-  #   } else {
-  #     warning("The 'se' object is missing in the provided objects.")
-  #   }
-  # }
-
-  # # Save the dds object if the workflow matches specific conditions
-  # if (params$workflow == "dds" || params$workflow == "se_dds") {
-  #   if (!is.null(objects$dds)) {
-  #     object_path <- file.path(dir_path, "dds.rds")
-  #     saveRDS(objects$dds, object_path)
-  #     message(sprintf("Saved 'dds' object to %s", object_path))
-  #   } else {
-  #     warning("The 'dds' object is missing in the provided objects.")
-  #   }
-  # }
-
-  # # Save the vdx object if the workflow matches specific conditions
-  # if (params$workflow == "se_vdx") {
-  #   if (!is.null(objects$vdx)) {
-  #     object_path <- file.path(dir_path, "vdx.rds")
-  #     saveRDS(objects$vdx, object_path)
-  #     message(sprintf("Saved 'vdx' object to %s", object_path))
-  #   } else {
-  #     warning("The 'vdx' object is missing in the provided objects.")
-  #   }
-  # }
-
-  # # Save the vdx object if the workflow matches specific conditions
-  # if (params$workflow == "dde" || params$workflow == "se_dde") {
-  #   if (!is.null(objects$dde)) {
-  #     object_path <- file.path(dir_path, "dde.rds")
-  #     saveRDS(objects$dde, object_path)
-  #     message(sprintf("Saved 'dde' object to %s", object_path))
-  #   } else {
-  #     warning("The 'dde' object is missing in the provided objects.")
-  #   }
-  # }
-
-  # # Save the results object if computations are not run
-  # if (params$workflow != "dde" && params$workflow != "se_dde") {
-  #   if (!is.null(objects$results)) {
-  #     object_path <- file.path(dir_path, "results.rds")
-  #     saveRDS(objects$results, object_path)
-  #     message(sprintf("Saved 'results' object to %s", object_path))
-  #   } else {
-  #     warning("The 'results' object is missing in the provided objects.")
-  #   }
-  # }
-
-  # # Save the results object if computations are not run
-  # if (TRUE) {
-  #   if (!is.null(objects$anns)) {
-  #     object_path <- file.path(dir_path, "anns.rds")
-  #     saveRDS(objects$anns, object_path)
-  #     message(sprintf("Saved 'anns' object to %s", object_path))
-  #   } else {
-  #     warning("The 'anns' object is missing in the provided objects.")
-  #   }
-  # }
-
-  # # Save any remaining objects that haven't been handled explicitly
-  # handled_objects <- c("se", "dds", "vdx", "dde", "results", "anns")
-  # remaining_objects <- setdiff(names(objects), handled_objects)
 
   for (obj_name in names(objects)) {
     object_path <- file.path(dir_path, paste0(obj_name, ".rds"))

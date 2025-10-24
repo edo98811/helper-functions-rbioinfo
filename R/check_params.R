@@ -41,7 +41,7 @@ check_params <- function(params_list) {
     "subset_object",
     "species",
     "create_annotation_df",
-    "workflow",
+    # "workflow",
     "save_results"
   )
 
