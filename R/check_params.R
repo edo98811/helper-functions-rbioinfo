@@ -1,4 +1,4 @@
-#' Check that the parameters in params are valid
+#' Check that the parameters in params are valid (deprecated)
 #'
 #' This function validates that a given list contains specific required names
 #' and checks the values of certain parameters for correctness.

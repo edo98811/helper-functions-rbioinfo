@@ -10,12 +10,11 @@
 #'        Supported values include `"ENSEMBL"`, `"SYMBOL"`, `"UNIPROT"`, etc.
 #' @param columns A character vector specifying the types of annotations to retrieve.
 #'        Default is `c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT")`.
-#' @param force_creation A logical value indicating whether to force the creation of annotations
-#'        even if they already exist in the parent environment. Default is `FALSE`.
+#' @param object_name A character string specifying the name of the object to assign the annotations to.
 #'
 #' @return A data frame containing the requested annotations. The row names of the returned data frame
 #'         match the row names of the input `SummarizedExperiment` object, and the column names correspond
-#'         to the requested annotation types.
+#'         to the requested annotation types. NULL if `params$create_annotation_df` is FALSE.
 #'
 #' @details
 #' The function uses the `AnnotationDbi` package to map identifiers between different annotation types.
