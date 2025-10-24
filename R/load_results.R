@@ -31,8 +31,9 @@
 #' @export
 load_results <- function(params) {
   # Validate the input parameters
-  if (!check_params(params)) stop("load_results: wrong parameters provided.")
-
+  if (params$analysis_name == "" || is.null(params$analysis_name)) {
+    stop("Invalid analysis_name provided in parameters.")
+  }
   # If run_computations is TRUE, skip loading operations
   if (params$run_computations == TRUE) {
     message("run_computations is TRUE. Skipping loading of results")

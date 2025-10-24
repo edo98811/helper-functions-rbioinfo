@@ -51,7 +51,10 @@
 #' @export
 save_results <- function(params, objects) {
   # Validate the input parameters
-  if (!check_params(params)) stop("save_results: wrong parameters provided.")
+
+  if (params$analysis_name == "" || is.null(params$analysis_name)) {
+    stop("Invalid analysis_name provided in parameters.")
+  }
 
   # Validate the input objects
   if (!is.list(objects)) {

@@ -32,13 +32,14 @@
 #' @export
 # Function to check that a list contains specific required names
 check_params <- function(params_list) {
+  #  to use:   # if (!check_params(params)) stop("save_results: wrong parameters provided.")
   # Define the required names
   required_names <- c(
     "run_computations",
     "analysis_name",
     "source_object",
     "metadata_file",
-    "subset_object",
+    # "subset_object",
     "species",
     "create_annotation_df",
     # "workflow",
@@ -59,11 +60,6 @@ check_params <- function(params_list) {
   #   stop("Invalid workflow type. Accepted values are: ", paste(valid_workflows, collapse = ", "))
   # }
 
-  # Validate specific values for subset_object and species
-  if (!is.logical(params_list$subset_object)) {
-    warning("The 'subset_object' parameter must be TRUE or FALSE.")
-    return(FALSE)
-  }
 
   if (!params_list$species %in% c("Hs", "Mm")) {
     warning("The 'species' parameter must be either 'Hs' or 'Mm'.")

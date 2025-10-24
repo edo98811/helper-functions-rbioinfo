@@ -42,8 +42,9 @@
 
 prepare_workspace <- function(params) {
   # Validate the input parameters
-  if (!check_params(params)) stop("prepare_workspace: wrong parameters provided.")
-
+  if (params$analysis_name == "" || is.null(params$analysis_name)) {
+    stop("Invalid analysis_name provided in parameters.")
+  }
   # Determine the directory path based on the provided parameters
   dir_path <- file.path("analyses_results", params$analysis_name)
   # Initialize workspace
@@ -59,7 +60,7 @@ prepare_workspace <- function(params) {
     assign("source_object", source_object, envir = parent.frame())
     message(sprintf("Loaded 'source_object' from %s", object_path))
   }
-  
+
   # Load the anns object from RDS
   object_path <- file.path(dir_path, "anns.rds")
 
