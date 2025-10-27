@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_params.R
 \name{check_params}
 \alias{check_params}
-\title{Check that the parameters in params are valid}
+\title{Check that the parameters in params are valid (deprecated)}
 \usage{
 check_params(params_list)
 }
