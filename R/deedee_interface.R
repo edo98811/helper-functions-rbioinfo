@@ -176,7 +176,8 @@ fea_for_report <- function(fea_table, interactive = TRUE, alpha = 0.05, pvalue_c
   # }
 
   message("Extracting tables...")
-  fea_table <- fea_table[rowSums(is.na(fea_table)) == 0, ]
+  fea_table <- fea_table[rowSums(is.na(fea_table)) == 0, ] # remove rows with NA
+  browser()
   if (alpha < 1) fea_table <- fea_table[fea_table[[pvalue_column]] < alpha, ]
   if (nrow(fea_table) == 0) {
     warning("No rows remaining after applying the alpha threshold.")
@@ -223,6 +224,7 @@ createLinkKEGG <- function(val) {
 #' @param dde A DeeDeeExperiment object
 #'
 #' @return A list of the available tables in the fea slot
+#' @importFrom DeeDeeExperiment getFEAList
 #'
 #' @export
 get_fea_list_report <- function(dde, ...) {
@@ -230,8 +232,8 @@ get_fea_list_report <- function(dde, ...) {
     {
       return(getFEAList(dde, ...))
     },
-    error = {
-      warning("No results found in FEA slot.")
+    error = function(e) {
+      message("Error in get_fea_list_report: ", conditionMessage(e))
       return(NULL)
     }
   )
@@ -244,6 +246,7 @@ get_fea_list_report <- function(dde, ...) {
 #' @param dde A DeeDeeExperiment object
 #'
 #' @return A list of the available tables in the fea slot
+#' @importFrom DeeDeeExperiment getDEAList
 #'
 #' @export
 get_dea_list_report <- function(dde, ...) {
@@ -251,8 +254,8 @@ get_dea_list_report <- function(dde, ...) {
     {
       return(getDEAList(dde, ...))
     },
-    error = {
-      warning("No results found in DEA slot.")
+    error = function(e) {
+      message("Error in get_fea_list_report: ", conditionMessage(e))
       return(NULL)
     }
   )
