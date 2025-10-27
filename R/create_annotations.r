@@ -5,7 +5,7 @@
 #'
 #' @param params A list containing parameters for the function. Must include the `species` key,
 #'        which specifies the species. Supported values are `"Mm"` for mouse and `"Hs"` for human.
-#' @param se A `SummarizedExperiment` object. The row names of this object are used as keys for annotation mapping.
+#' @param keys_list A character vector containing the identifiers from the row names of the `SummarizedExperiment` object.
 #' @param source_type A character string specifying the type of identifier used in the row names of `se`.
 #'        Supported values include `"ENSEMBL"`, `"SYMBOL"`, `"UNIPROT"`, etc.
 #' @param columns A character vector specifying the types of annotations to retrieve.
@@ -21,31 +21,10 @@
 #' If any entries cannot be mapped, a warning is issued, and `NA` values are returned for those entries.
 #' If all entries fail to map, the function stops with an error.
 #'
-#' @examples
-#' \dontrun{
-#' library(SummarizedExperiment)
-#' library(org.Mm.eg.db)
-#'
-#' # Example SummarizedExperiment object
-#' se <- SummarizedExperiment(
-#'   assays = list(counts = matrix(1:4, nrow = 2)),
-#'   rowData = DataFrame(ENSEMBL = c("ENSMUSG00000000001", "ENSMUSG00000000003"))
-#' )
-#'
-#' # Create annotations
-#' params <- list(species = "Mm")
-#' annotations <- create_annotations(params, se,
-#'   source_type = "ENSEMBL",
-#'   columns = c("SYMBOL", "ENTREZID")
-#' )
-#' print(annotations)
-#' }
-#'
 #' @importFrom AnnotationDbi mapIds keytypes
 #' @importFrom org.Mm.eg.db org.Mm.eg.db
 #' @importFrom org.Hs.eg.db org.Hs.eg.db
 #' @export
-
 create_annotations <- function(params, keys_list, source_type = "ENSEMBL", columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"), object_name = "anns") {
 
   # if (!purrr::pluck(params, "create_annotation_df", .default = FALSE)) {

@@ -21,33 +21,6 @@
 #'   }
 #'
 #' @return A message indicating that the objects were saved successfully.
-#'
-#' @details
-#' The function performs the following steps:
-#' \enumerate{
-#'   \item Validates the input parameters and objects.
-#'   \item Creates the directory for saving objects if it does not exist.
-#'   \item Saves objects based on the specified workflow and conditions.
-#' }
-#'
-#' @examples
-#' \dontrun{
-#' params <- list(
-#'   workflow = "se_dds",
-#'   run_computations = TRUE,
-#'   analysis_folder = "output",
-#'   analysis_name = "experiment_1",
-#'   save_results = TRUE
-#' )
-#' objects <- list(
-#'   se = se_object,
-#'   dds = dds_object,
-#'   vdx = vdx_object,
-#'   results = results_object
-#' )
-#' save_results(params, objects)
-#' }
-#'
 #' @export
 save_results <- function(params, objects) {
   # Validate the input parameters

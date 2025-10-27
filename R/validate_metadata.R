@@ -12,12 +12,6 @@
 #' @return Returns `TRUE` if the row names match. If the row names do not match,
 #' the function throws an error.
 #'
-#' @examples
-#' # Example usage:
-#' # metadata_df <- data.frame(sample_id = c("sample1", "sample2"), row.names = c("sample1", "sample2"))
-#' # se <- SummarizedExperiment::SummarizedExperiment(rowData = DataFrame(row.names = c("sample1", "sample2")))
-#' # validate_metadata(metadata_df, se)
-#'
 #' @export
 validate_metadata <- function(metadata_df, se) {
   # Check if the rownames of the metadata data.frame match the rownames of the rowData in the SummarizedExperiment object

@@ -20,13 +20,6 @@ dea_for_report <- function(dea_table, anns, rownames_col = "ENSEMBL", interactiv
     stop("alpha threshold must be between 0 and 1.")
   }
 
-  # if (format == "deseq2") {
-  #   required_cols <- c("id", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")
-  #   if (!all(required_cols %in% colnames(dea_table))) {
-  #     stop("The dea table must be the output of dea() from DeeDeeExperiment in the original format (par format = 'original')")
-  #   }
-  # }
-
   if (inherits(dea_table, "data.frame")) {
     if (nrow(dea_table) == 0) {
       message("No features found.")
@@ -203,9 +196,6 @@ createLinkENS <- function(val, species) {
 }
 
 createLinkGeneSymbol <- function(val) {
-  # possibilities:
-  # ncbi
-  # genecards
   paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=', val, '[sym]" target="_blank" class="btn btn-primary">', val, "</a>")
 }
 

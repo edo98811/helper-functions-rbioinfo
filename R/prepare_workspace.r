@@ -12,34 +12,9 @@
 #'   }
 #'
 #' @return Logical \code{TRUE} if the workspace is successfully prepared.
-#'
-#' @details
-#' The function performs the following tasks:
-#' \itemize{
-#'   \item Validates the input parameters.
-#'   \item Loads RDS objects (\code{se}, \code{dds}, and \code{anns}) based on the specified workflow and directory path.
-#'   \item Reads the metadata file, which can be in CSV or Excel format.
-#' }
-#'
-#' @note
-#' The function requires the \code{readxl} package to read Excel files. Ensure the package is installed if using Excel metadata files.
-#'
-#' @examples
-#' \dontrun{
-#' params <- list(
-#'   workflow = "se_dds",
-#'   run_computations = TRUE,
-#'   analysis_folder = "path/to/analysis_folder",
-#'   analysis_name = "example_analysis",
-#'   metadata_file = "path/to/metadata.csv"
-#' )
-#' prepare_workspace(params)
-#' }
+#' @importFrom readxl read_excel
 #'
 #' @export
-# Function: prepare_workspace
-# Description: Skeleton for a function to prepare the workspace for bioinformatics analysis.
-
 prepare_workspace <- function(params) {
   # Validate the input parameters
   if (params$analysis_name == "" || is.null(params$analysis_name)) {
@@ -83,9 +58,6 @@ prepare_workspace <- function(params) {
   if (grepl("\\.csv$", metadata_path, ignore.case = TRUE)) {
     metadata <- read.csv(metadata_path, stringsAsFactors = FALSE)
   } else if (grepl("\\.(xls|xlsx)$", metadata_path, ignore.case = TRUE)) {
-    if (!requireNamespace("readxl", quietly = TRUE)) {
-      stop("The 'readxl' package is required to read Excel files. Please install it.")
-    }
     metadata <- readxl::read_excel(metadata_path)
     message(sprintf("Loaded 'metadata' object from %s", metadata_path))
   } else {
