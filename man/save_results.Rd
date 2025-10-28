@@ -32,30 +32,3 @@ This function saves multiple R objects to disk based on specified conditions and
 It validates the input parameters and objects, creates necessary directories, and saves the objects
 in \code{.rds} format according to the workflow and other conditions provided.
 }
-\details{
-The function performs the following steps:
-\enumerate{
-\item Validates the input parameters and objects.
-\item Creates the directory for saving objects if it does not exist.
-\item Saves objects based on the specified workflow and conditions.
-}
-}
-\examples{
-\dontrun{
-params <- list(
-  workflow = "se_dds",
-  run_computations = TRUE,
-  analysis_folder = "output",
-  analysis_name = "experiment_1",
-  save_results = TRUE
-)
-objects <- list(
-  se = se_object,
-  dds = dds_object,
-  vdx = vdx_object,
-  results = results_object
-)
-save_results(params, objects)
-}
-
-}
