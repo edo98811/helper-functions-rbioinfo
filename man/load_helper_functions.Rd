@@ -13,7 +13,7 @@ load_helper_functions(folder = "helper_functions")
 None. The function loads the R scripts into the current environment.
 }
 \description{
-This function loads all R scripts located in the specified folder (default is "helper_functions").
-Each R script is sourced into the current R environment, making the functions and objects defined
-in those scripts available for use.
+Loads all R scripts located in a specified folder on the user's computer.
+Each script is sourced into the \emph{global environment}, making all functions
+and objects defined in those scripts immediately available for use.
 }
