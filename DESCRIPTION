@@ -1,18 +1,21 @@
 Package: rbioinfoHelper
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Bioinformatics Helper Functions
+Version: 0.3.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Edoardo", "Filippi", , "edoardo.filippi@uni-mainz.de.com", role = c("aut", "cre"))
+Description: Bioinformatics Helper Functions to create reports.
+License: use_mit_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports:
-    biomaRt,
-    SummarizedExperiment,
-    DESeq2,
-    purrr,
-    readxl,
-    S4Vectors
+  limma,
+  DESeq2,
+  edgeR,
+  AnnotationDbi,
+  org.Hs.eg.db,
+  org.Mm.eg.db,
+  htmltools,
+  DT,
+  htmltools,
+  knitr

@@ -1,88 +1,112 @@
-# Introduction
 
-This is a package used to create reports
+# helper-functions-rbioinfo
 
-# Installation 
+**An R package designed to help with RNA-seq and bioinformatics analyses by simplifying data handling and report generation.**
 
-[https://github.com/edo98811/helper-functions-rbioinfo.git](https://github.com/edo98811/helper-functions-rbioinfo.git)
+---
 
-To install this package, you can use the `remotes` package in R:
+## Introduction
+
+`helper-functions-rbioinfo` is an R package created to facilitate the creation of reproducible reports from RNA-seq or bioinformatics analyses. It helps manage data preprocessing, differential expression analysis results, and enrichment outputs, allowing you to focus on interpretation and report generation without worrying about data management or inconsistencies.
+
+---
+
+## Installation
+
+You can install the package directly from GitHub using the `remotes` package:
 
 ```r
-# Install the remotes package if you haven't already
+# Install remotes if you don't have it
 install.packages("remotes")
 
-# Use remotes to install the package from GitHub
+# Install helper-functions-rbioinfo from GitHub
 remotes::install_github("edo98811/helper-functions-rbioinfo")
 ```
 
-# Parameters
+---
 
-The `params` list contains the following elements:
+## Usage Overview
 
-* `filter_complete_dds`: Logical, whether to filter the complete DDS object including only a subset (default is FALSE).
-* `load_complete_dds`: Logical, whether to load the complete DDS object (default is FALSE).
-* `load_dds_objects`: Logical, whether to load DDS objects (default is TRUE).
-* `save_dds_objects`: Logical, whether to save DDS objects (default is FALSE).
-* `complete_dds_source`: Path to the complete DDS source file.
-* `analysis_name`: Name of the experiment.
-* `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
-* `create_annotation_df`: Logical, whether to create annotation data frames (default is FALSE).
-* `workflow`: A character string specifying the workflow to use (default is "dds"). if working only with SummarizedExperiment write summarized_experiment
+The package workflow is centered around a **SummarizedExperiment (SE)** object and includes the following main steps:
 
-# Available functions 
+### Key Parameters
 
+The following parameters are used throughout the workflow and passed as a list to several main functions:
 
-`add_symbol_to_dds()`: Adds gene symbols to a DESeq2 dataset.
+* `run_computations` (logical): Whether to run the computations or just load precomputed results.
+* `analysis_name` (string): Name for the current analysis.
+* `source_se` (string): Path to an RDS file containing the starting SummarizedExperiment object.
+* `subset_object` (logical): Whether to subset the data object.
+* `species` (string): Species identifier (`"hs"` for human, `"mm"` for mouse).
+* `metadata_file` (string): Path to metadata in XLSX or CSV format.
+* `workflow` (string): Choose from `"se_vdx"`, `"se_dds"`, `"se"`, or `"dds"`.
+* `save_results` (logical): Whether to save results after computation.
 
-* `dds`: A DESeq2 dataset object.
-* `annotation_dataset`: A data frame containing gene annotations with at least two columns: `gene_id` and `gene_name`. The `gene_id` column should match the row names of the DESeq2 dataset.
+These parameters are passed as the `params` argument to the following key functions in the package:
 
-`alltheresults()`: Creates the myResuset list, useful to structure the results.
+* `prepare_workspace`
+* `load_results`
+* `create_annotations`
+* `table_topGO`
+* `save_results`
 
-* `resuSet`: A list to store the results.
-* `dds_obj`: A DESeqDataSet object.
-* `contrast`: A character vector specifying the contrast.
-* `FDR`: A numeric value specifying the false discovery rate threshold.
-* `anno_df`: A data frame containing gene annotations with columns `gene_id` and `gene_name`.
-* `anns`: A data frame containing additional annotations with columns `ensembl_gene_id`, `description`, and `chromosome_name`.
-* `species`: A character string specifying the species for creating links.
+---
 
-`create_annotations()`: Creates two dataframes that contain the info on all the genes present in the dds object.
+### Workflow Steps
 
-* `dds`: A DESeqDataSet object. The function will stop if the provided object is not of class 'DESeqDataSet'.
+1. **Parameter Validation**
+   Check that all required parameters are correctly set.
 
-`load_analyses()`: Loads previously saved analysis results.
+2. **Workspace Preparation**
+   Load essential input data including:
 
-* `params`: A list containing the following elements:
-    - `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
-    - `load_gse`: Logical, whether to load the GSE object (default is FALSE).
-    - `load_complete_dds`: Logical, whether to load the complete DDS object (default is FALSE).
-    - `complete_dds_source`: Path to the complete DDS source file.
+   * `source_se` object
+   * Metadata (validated for matching rownames with the SE rowData)
 
-`load_rds_arrow()`: Loads DDS objects using the Arrow package for efficient data handling.
+3. **Loading Results**
+   If `run_computations` is `FALSE`, load previously computed results for visualization or further analysis.
 
-`prepare_workspace()`: Sets up the R environment for analysis, including loading necessary libraries and data.
+4. **Data Subsetting** (optional)
+   Subset the SE or associated objects if requested.
 
-* `params`: A list containing the following elements:
-    - `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
-    - `load_gse`: Logical, whether to load the GSE object (default is FALSE).
-    - `load_complete_dds`: Logical, whether to load the complete DDS object (default is FALSE).
-    - `complete_dds_source`: Path to the complete DDS source file.
+5. **Annotation Creation**
+   Create annotation data frames (`anns`) if they do not already exist in the environment.
 
-* `params`:(to work not with dds) A list containing the following elements:
-    - `sample_metadata_file`: Path to the experiment metadata file (xlsx format).
-    - `workflow`: A character string specifying the workflow to use (needs to be "summarized_experiment").
+6. **Differential Expression Results Handling (`all_the_results`)**
+   Generate DE results objects for specific contrasts.
+   Currently supports input objects of type `dds` or `limma`.
 
-`save_se_arrow()`: Loads DDS objects using the Arrow package for efficient data handling. (to implement)
+7. **Differential Expression Table (`table_DE`)**
+   Create interactive DE result tables suitable for reports or exploration.
+   Designed to be run in a loop across contrasts.
 
-`load_se_analyses()`: Loads previously saved SE analysis results. (to implement)
+8. **Enrichment Analysis (`topGO` or `clusterProfiler`)**
+   Perform GO enrichment on DE results.
+   Works with `limma` and `DESeq2` results using the SYMBOL column generated by `all_the_results`.
 
-`create_annotations_proteomics()`: Creates annotation data frame for proteomics data (anno_df).
+9. **Saving Results**
+   Save:
 
-* `se`: a SummarizedExperiment (SE) object.
+   * `myresuset` as `results.rds`
+   * Workflow-specific objects (`se`, `vdx`, `dds`, `results`) passed in a named list.
 
-`save_se()`: Saves a SummarizedExperiment (SE) object to a RDS file.
+---
 
-* `se`: A SummarizedExperiment object to be saved.
-* `params`: A character string specifying the path where the SE object should be saved.
+## Workflow Concept
+
+The package revolves around a clean, modular workflow using the SummarizedExperiment framework:
+
+* Load core inputs: `metadata`, `anns`, and `se`.
+* If `run_computations = FALSE`, load stored results (`deede` and `myresuset`).
+* Optionally subset data and create annotations.
+* Users perform DE analysis externally based on their preferred workflow.
+* Extract results with `all_the_results`.
+* Create interactive DE tables via `table_DE`.
+* Perform enrichment analysis and generate interactive tables with `table_topGO`.
+
+---
+
+## Goals
+
+* Remove the burden of data wrangling and inconsistency handling.
+* Allow users to focus on efficient report creation and data interpretation.
