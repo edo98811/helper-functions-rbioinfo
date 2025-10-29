@@ -1,22 +1,16 @@
 #' Validate Metadata Against SummarizedExperiment Object
 #'
-#' This function checks whether the row names of a metadata data frame match 
+#' This function checks whether the row names of a metadata data frame match
 #' the row names of the `rowData` in a `SummarizedExperiment` object.
 #'
-#' @param metadata_df A `data.frame` containing metadata. The row names of this 
-#' data frame should correspond to the row names of the `rowData` in the 
+#' @param metadata_df A `data.frame` containing metadata. The row names of this
+#' data frame should correspond to the row names of the `rowData` in the
 #' `SummarizedExperiment` object.
-#' @param se A `SummarizedExperiment` object. The function validates that the 
+#' @param se A `SummarizedExperiment` object. The function validates that the
 #' row names of the `metadata_df` match the row names of the `rowData` in this object.
 #'
-#' @return Returns `TRUE` if the row names match. If the row names do not match, 
+#' @return Returns `TRUE` if the row names match. If the row names do not match,
 #' the function throws an error.
-#'
-#' @examples
-#' # Example usage:
-#' # metadata_df <- data.frame(sample_id = c("sample1", "sample2"), row.names = c("sample1", "sample2"))
-#' # se <- SummarizedExperiment::SummarizedExperiment(rowData = DataFrame(row.names = c("sample1", "sample2")))
-#' # validate_metadata(metadata_df, se)
 #'
 #' @export
 validate_metadata <- function(metadata_df, se) {
@@ -26,3 +20,4 @@ validate_metadata <- function(metadata_df, se) {
   }
   return(TRUE)
 }
+

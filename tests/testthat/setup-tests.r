@@ -9,7 +9,6 @@ suppressPackageStartupMessages({
   library("clusterProfiler")
   library("limma")
   library("edgeR")
-  library("GeneTonic")
 })
 message("- Done!")
 

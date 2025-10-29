@@ -22,10 +22,3 @@ the function throws an error.
 This function checks whether the row names of a metadata data frame match
 the row names of the \code{rowData} in a \code{SummarizedExperiment} object.
 }
-\examples{
-# Example usage:
-# metadata_df <- data.frame(sample_id = c("sample1", "sample2"), row.names = c("sample1", "sample2"))
-# se <- SummarizedExperiment::SummarizedExperiment(rowData = DataFrame(row.names = c("sample1", "sample2")))
-# validate_metadata(metadata_df, se)
-
-}

@@ -6,17 +6,17 @@
 \usage{
 create_annotations(
   params,
-  se,
+  keys_list,
   source_type = "ENSEMBL",
   columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"),
-  force_creation = FALSE
+  object_name = "anns"
 )
 }
 \arguments{
 \item{params}{A list containing parameters for the function. Must include the \code{species} key,
 which specifies the species. Supported values are \code{"Mm"} for mouse and \code{"Hs"} for human.}
 
-\item{se}{A \code{SummarizedExperiment} object. The row names of this object are used as keys for annotation mapping.}
+\item{keys_list}{A character vector containing the identifiers from the row names of the \code{SummarizedExperiment} object.}
 
 \item{source_type}{A character string specifying the type of identifier used in the row names of \code{se}.
 Supported values include \code{"ENSEMBL"}, \code{"SYMBOL"}, \code{"UNIPROT"}, etc.}
@@ -24,13 +24,12 @@ Supported values include \code{"ENSEMBL"}, \code{"SYMBOL"}, \code{"UNIPROT"}, et
 \item{columns}{A character vector specifying the types of annotations to retrieve.
 Default is \code{c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT")}.}
 
-\item{force_creation}{A logical value indicating whether to force the creation of annotations
-even if they already exist in the parent environment. Default is \code{FALSE}.}
+\item{object_name}{A character string specifying the name of the object to assign the annotations to.}
 }
 \value{
 A data frame containing the requested annotations. The row names of the returned data frame
 match the row names of the input \code{SummarizedExperiment} object, and the column names correspond
-to the requested annotation types.
+to the requested annotation types. NULL if \code{params$create_annotation_df} is FALSE.
 }
 \description{
 This function generates annotations for a given \code{SummarizedExperiment} object
@@ -40,21 +39,4 @@ by mapping identifiers between different annotation types (e.g., SYMBOL, ENSEMBL
 The function uses the \code{AnnotationDbi} package to map identifiers between different annotation types.
 If any entries cannot be mapped, a warning is issued, and \code{NA} values are returned for those entries.
 If all entries fail to map, the function stops with an error.
-}
-\examples{
-\dontrun{
-library(SummarizedExperiment)
-library(org.Mm.eg.db)
-
-# Example SummarizedExperiment object
-se <- SummarizedExperiment(assays = list(counts = matrix(1:4, nrow = 2)),
-                            rowData = DataFrame(ENSEMBL = c("ENSMUSG00000000001", "ENSMUSG00000000003")))
-
-# Create annotations
-params <- list(species = "Mm")
-annotations <- create_annotations(params, se, source_type = "ENSEMBL", 
-                                   columns = c("SYMBOL", "ENTREZID"))
-print(annotations)
-}
-
 }

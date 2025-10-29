@@ -1,12 +1,4 @@
-# sections present in myResuSet
-#  - res_DESeq -> DESeq2 results object
-#  - maplot_res -> MA plot of DESeq2 results
-#  - tbl_res_all -> Data frame of all DESeq2 results
-#  - tbl_res_DE -> Data frame of significant DESeq2 results
-#  - etbl_res_DE -> Interactive table of significant DESeq2 results
-#  - clupro_tbl -> ClusterProfiler results table (not implemented in this script)
-#  - topGO_tbl -> topGO results table (not implemented in this script)
-#' Extract and process DESeq2 results
+#' Process and extract all results for a given contrast from DESeq2 or limma analysis
 #'
 #' This function extracts and processes DESeq2 results for a given contrast,
 #' performs LFC shrinkage, and generates various result tables and plots.
@@ -20,6 +12,14 @@
 #'
 #' @return A list containing the processed results, including DESeq2 results,
 #'         LFC shrinkage results, result tables, and interactive tables.
+#' 
+#' @details
+#' # sections present in myResuSet
+#'- res_DESeq / fitted_model -> DESeq2 results object / limma model
+#'- tbl_res_all -> Data frame of all DESeq2 results
+#'- tbl_res_DE -> Data frame of significant DESeq2 results
+#'- etbl_res_DE -> Interactive table of significant DESeq2 results
+#'- topGO_tbl -> topGO results table (not implemented in this script)
 #'
 #' @examples
 #' \dontrun{
@@ -38,12 +38,10 @@ alltheresults <- function(object, resuSet, contrast, FDR, anns, species) {
     message("Processing DESeq2 object...")
     # Call DESeq2-specific analysis function
     return(alltheresults_dds(object, resuSet, contrast, FDR, anns, species))
-    
   } else if (inherits(object, "MArrayLM")) {
     message("Processing limma object...")
     # Call limma-specific analysis function
     return(alltheresults_limma(object, resuSet, contrast, FDR, anns, species))
-    
   } else {
     stop("Unsupported object type: must be DESeqDataSet or MArrayLM")
   }
@@ -101,45 +99,44 @@ alltheresults_dds <- function(dds_obj, resuSet, contrast, FDR, anns, species) {
 }
 
 alltheresults_limma <- function(fitted_limma_model, resuSet, contrast, FDR, anns, species = "Mus_musculus") {
+  # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
+  id_contrast <- contrast
+  resuSet[[id_contrast]] <- list()
 
-    # id_contrast <- paste0(contrast[2],"_vs_",contrast[3])
-    id_contrast <- contrast
-    resuSet[[id_contrast]] <- list()
+  mycoef <- contrast
 
-    mycoef <- contrast
+  message("Extracting results...")
+  resuSet[[id_contrast]][["fitted_model"]] <- fitted_limma_model
 
-    message("Extracting results...")
-    resuSet[[id_contrast]][["fitted_model"]] <- fitted_limma_model
+  message("Extracting tables...")
+  resuSet[[id_contrast]][["tbl_res_all"]] <- add_gene_info(topTable(fitted_limma_model, coef = contrast, adjust = "fdr", number = Inf, confint = FALSE), anns)
 
-    message("Extracting tables...")
-    resuSet[[id_contrast]][["tbl_res_all"]] <- add_gene_info(topTable(fitted_limma_model, coef=contrast, adjust="fdr", number=Inf, confint = FALSE), anns)
+  message("Extracting DEtables...")
+  resuSet[[id_contrast]][["tbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_all"]][resuSet[[id_contrast]][["tbl_res_all"]]$adj.P.Val < FDR, ]
 
-    message("Extracting DEtables...")
-    resuSet[[id_contrast]][["tbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_all"]][resuSet[[id_contrast]][["tbl_res_all"]]$adj.P.Val < FDR, ]
-    
-    message("Extracting DEtables ENSEMBL...")
-    resuSet[[id_contrast]][["tbl_res_DE_genes"]] <- results_to_ENSEMBL(resuSet[[id_contrast]][["tbl_res_DE"]], anns)
-    
-    if(nrow(resuSet[[id_contrast]][["tbl_res_DE"]]) > 0) {
-      message("Generating interactive DEtable...")
-      resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
-      resuSet[[id_contrast]][["etbl_res_DE"]]$ENSEMBL <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$ENSEMBL, species = species)
-      resuSet[[id_contrast]][["etbl_res_DE"]]$SYMBOL <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$SYMBOL)
-      resuSet[[id_contrast]][["etbl_res_DE"]]$UNIPROT <- createLinkUNIPROT(resuSet[[id_contrast]][["etbl_res_DE"]]$UNIPROT)
-      
-      # Move SYMBOL and UNIPROT as first columns
-      message("Reordering columns...")
-      resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["etbl_res_DE"]][, c("SYMBOL", "UNIPROT", setdiff(names(resuSet[[id_contrast]][["etbl_res_DE"]]), c("SYMBOL", "UNIPROT")))]
-      
-      # Round numerical columns to 3 decimal points
-      num_cols <- sapply(resuSet[[id_contrast]][["etbl_res_DE"]], is.numeric)
-      resuSet[[id_contrast]][["etbl_res_DE"]][, num_cols] <- lapply(resuSet[[id_contrast]][["etbl_res_DE"]][, num_cols], round, 4)
-    }
+  message("Extracting DEtables ENSEMBL...")
+  resuSet[[id_contrast]][["tbl_res_DE_genes"]] <- results_to_ENSEMBL(resuSet[[id_contrast]][["tbl_res_DE"]], anns)
 
-    mybuttons <- c('copy', 'csv', 'excel', 'pdf', 'print')
-    DT::datatable(resuSet[[id_contrast]][["etbl_res_DE"]],caption = paste0(id_contrast,", DE genes"), escape=F, extensions = 'Buttons', options = list(dom = 'Bfrtip',buttons = mybuttons))
+  if (nrow(resuSet[[id_contrast]][["tbl_res_DE"]]) > 0) {
+    message("Generating interactive DEtable...")
+    resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["tbl_res_DE"]]
+    resuSet[[id_contrast]][["etbl_res_DE"]]$ENSEMBL <- createLinkENS(resuSet[[id_contrast]][["etbl_res_DE"]]$ENSEMBL, species = species)
+    resuSet[[id_contrast]][["etbl_res_DE"]]$SYMBOL <- createLinkGeneSymbol(resuSet[[id_contrast]][["etbl_res_DE"]]$SYMBOL)
+    resuSet[[id_contrast]][["etbl_res_DE"]]$UNIPROT <- createLinkUNIPROT(resuSet[[id_contrast]][["etbl_res_DE"]]$UNIPROT)
 
-    return(resuSet)
+    # Move SYMBOL and UNIPROT as first columns
+    message("Reordering columns...")
+    resuSet[[id_contrast]][["etbl_res_DE"]] <- resuSet[[id_contrast]][["etbl_res_DE"]][, c("SYMBOL", "UNIPROT", setdiff(names(resuSet[[id_contrast]][["etbl_res_DE"]]), c("SYMBOL", "UNIPROT")))]
+
+    # Round numerical columns to 3 decimal points
+    num_cols <- sapply(resuSet[[id_contrast]][["etbl_res_DE"]], is.numeric)
+    resuSet[[id_contrast]][["etbl_res_DE"]][, num_cols] <- lapply(resuSet[[id_contrast]][["etbl_res_DE"]][, num_cols], round, 4)
+  }
+
+  mybuttons <- c("copy", "csv", "excel", "pdf", "print")
+  DT::datatable(resuSet[[id_contrast]][["etbl_res_DE"]], caption = paste0(id_contrast, ", DE genes"), escape = F, extensions = "Buttons", options = list(dom = "Bfrtip", buttons = mybuttons))
+
+  return(resuSet)
 }
 
 # functions to make results nicer
@@ -158,6 +155,6 @@ createLinkGeneSymbol <- function(val) {
   paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=', val, '[sym]" target="_blank" class="btn btn-primary">', val, "</a>")
 }
 
-createLinkUNIPROT  <- function(val) {
-  sprintf('<a href="https://www.uniprot.org/uniprotkb/%s/entry" target="_blank" class="btn btn-primary"">%s</a>',val,val)
+createLinkUNIPROT <- function(val) {
+  sprintf('<a href="https://www.uniprot.org/uniprotkb/%s/entry" target="_blank" class="btn btn-primary"">%s</a>', val, val)
 }

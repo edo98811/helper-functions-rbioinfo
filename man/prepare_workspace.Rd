@@ -22,27 +22,3 @@ Logical \code{TRUE} if the workspace is successfully prepared.
 \description{
 This function initializes the workspace for bioinformatics analysis by loading required objects and metadata files.
 }
-\details{
-The function performs the following tasks:
-\itemize{
-\item Validates the input parameters.
-\item Loads RDS objects (\code{se}, \code{dds}, and \code{anns}) based on the specified workflow and directory path.
-\item Reads the metadata file, which can be in CSV or Excel format.
-}
-}
-\note{
-The function requires the \code{readxl} package to read Excel files. Ensure the package is installed if using Excel metadata files.
-}
-\examples{
-\dontrun{
-params <- list(
-  workflow = "se_dds",
-  run_computations = TRUE,
-  analysis_folder = "path/to/analysis_folder",
-  analysis_name = "example_analysis",
-  metadata_file = "path/to/metadata.csv"
-)
-prepare_workspace(params)
-}
-
-}
