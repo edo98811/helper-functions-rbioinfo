@@ -6,7 +6,6 @@
 #'   \itemize{
 #'     \item \code{workflow}: A string specifying the workflow type. Supported values are \code{"se"}, \code{"se_vdx"}, \code{"se_dds"}, \code{"dds"}, or \code{"se_dds"}.
 #'     \item \code{run_computations}: A logical value indicating whether computations should be run (not used in the current implementation).
-#'     \item \code{analysis_folder}: A string specifying the folder where analysis results are stored.
 #'     \item \code{analysis_name}: A string specifying the name of the analysis (not used in the current implementation).
 #'     \item \code{metadata_file}: A string specifying the path to the metadata file (CSV or Excel format).
 #'   }
@@ -67,4 +66,5 @@ prepare_workspace <- function(params) {
   assign("metadata", metadata, envir = parent.frame())
 
   message("Workspace preparation complete.")
+  return(invisible(TRUE))
 }

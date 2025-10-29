@@ -6,23 +6,15 @@
 #'
 #' @param params A list containing the following elements:
 #'
-#' @return A character string indicating the status of the operation:
-#'   \itemize{
-#'     \item \code{"run_computations is TRUE. Skipping loading of results"} if \code{run_computations} is \code{TRUE}.
-#'     \item \code{"Objects loaded and assigned to parent environment."} if the objects are successfully loaded.
-#'   }
+#' @return NULL
 #'
 #' @details
-#' The function checks the existence of required RDS files based on the workflow type and loads the corresponding
-#' objects (\code{se}, \code{dds}, \code{vdx}, or \code{results}) into the parent environment. If any required file
-#' is missing, an error is raised.
+#' The function checks the existence of required RDS files in the analized_data subfolder of the analysis into the parent environment.
 #'
 #' @examples
 #' \dontrun{
 #' params <- list(
-#'   workflow = "se",
-#'   run_computations = FALSE,
-#'   analysis_folder = "path/to/folder",
+#'   run_computations = TRUE,
 #'   analysis_name = "example_analysis"
 #' )
 #' load_results(params)
@@ -34,6 +26,7 @@ load_results <- function(params) {
   if (params$analysis_name == "" || is.null(params$analysis_name)) {
     stop("Invalid analysis_name provided in parameters.")
   }
+  
   # If run_computations is TRUE, skip loading operations
   if (params$run_computations == TRUE) {
     message("run_computations is TRUE. Skipping loading of results")
@@ -49,4 +42,5 @@ load_results <- function(params) {
     var_name <- sub("\\.rds$", "", file)
     assign(var_name, object, envir = parent.frame())
   }
+  return(invisible(NULL))
 }

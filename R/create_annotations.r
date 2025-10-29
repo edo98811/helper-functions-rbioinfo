@@ -1,6 +1,6 @@
 #' Create Annotations for SummarizedExperiment Object
 #'
-#' This function generates annotations for a given `SummarizedExperiment` object
+#' This function generates annotations for the features in a `SummarizedExperiment` object
 #' by mapping identifiers between different annotation types (e.g., SYMBOL, ENSEMBL, ENTREZID, UNIPROT).
 #'
 #' @param params A list containing parameters for the function. Must include the `species` key,
@@ -31,7 +31,7 @@ create_annotations <- function(params, keys_list, source_type = "ENSEMBL", colum
   #   message("create_annotation not run")
   #   return(NULL)
   # }
-  if(params$create_annotation_df == FALSE){
+  if(!params$create_annotation_df){
     message("create_annotation not run")
     return(NULL)
   }

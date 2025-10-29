@@ -1,14 +1,10 @@
 #' Save Multiple Objects Based on Conditions
 #'
-#' This function saves multiple R objects to disk based on specified conditions and parameters.
-#' It validates the input parameters and objects, creates necessary directories, and saves the objects
-#' in `.rds` format according to the workflow and other conditions provided.
+#' This function saves multiple R objects to disk based on a list given as argument.
+#' It ccreates necessary directories, and saves the objects in `.rds` format according to their name in the list.
 #'
 #' @param params A list containing the following elements:
 #'   \describe{
-#'     \item{\code{workflow}}{A string specifying the workflow type. Valid values are "se", "dds", "se_vdx", "se_dds".}
-#'     \item{\code{run_computations}}{A logical value indicating whether computations are run.}
-#'     \item{\code{analysis_folder}}{A string specifying the folder where analysis results should be saved.}
 #'     \item{\code{analysis_name}}{A string specifying the name of the analysis.}
 #'     \item{\code{save_results}}{A logical value indicating whether to save the results object.}
 #'   }
@@ -23,13 +19,17 @@
 #' @return A message indicating that the objects were saved successfully.
 #' @export
 save_results <- function(params, objects) {
-  # Validate the input parameters
 
   if (params$analysis_name == "" || is.null(params$analysis_name)) {
     stop("Invalid analysis_name provided in parameters.")
   }
 
-  # Validate the input objects
+  if (!params$save_results) {
+    message("save_results is FALSE. Skipping saving of results")
+    return(invisible(NULL))
+  }
+
+
   if (!is.list(objects)) {
     stop("Invalid objects provided. Please provide a list of objects to save.")
   }
@@ -47,4 +47,6 @@ save_results <- function(params, objects) {
     saveRDS(objects[[obj_name]], object_path)
     message(sprintf("Saved '%s' object to %s", obj_name, object_path))
   }
+
+  return(invisible(NULL))
 }
