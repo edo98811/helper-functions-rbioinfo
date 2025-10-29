@@ -19,13 +19,9 @@ remotes::install_github("edo98811/helper-functions-rbioinfo")
 
 ---
 
-## Usage Overview
-
-The package workflow is centered around a **SummarizedExperiment (SE)** object and includes the following main steps:
-
 ### Key Parameters
 
-The following parameters are used throughout the workflow and passed as a list to several main functions:
+The following parameters are used throughout the workflow and passed as a list to functions:
 
 * `run_computations` (logical): Whether to run the computations or just load precomputed results.
 * `analysis_name` (string): Name for the current analysis.
