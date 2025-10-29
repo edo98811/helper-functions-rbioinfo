@@ -9,29 +9,18 @@ load_results(params)
 \arguments{
 \item{params}{A list containing the following elements:}
 }
-\value{
-A character string indicating the status of the operation:
-\itemize{
-\item \code{"run_computations is TRUE. Skipping loading of results"} if \code{run_computations} is \code{TRUE}.
-\item \code{"Objects loaded and assigned to parent environment."} if the objects are successfully loaded.
-}
-}
 \description{
 This function loads data objects from RDS files based on the specified workflow and parameters.
 It validates the input parameters, determines the directory path, and loads the appropriate objects
 into the parent environment. If \code{run_computations} is set to \code{TRUE}, the loading operations are skipped.
 }
 \details{
-The function checks the existence of required RDS files based on the workflow type and loads the corresponding
-objects (\code{se}, \code{dds}, \code{vdx}, or \code{results}) into the parent environment. If any required file
-is missing, an error is raised.
+The function checks the existence of required RDS files in the analized_data subfolder of the analysis into the parent environment.
 }
 \examples{
 \dontrun{
 params <- list(
-  workflow = "se",
-  run_computations = FALSE,
-  analysis_folder = "path/to/folder",
+  run_computations = TRUE,
   analysis_name = "example_analysis"
 )
 load_results(params)

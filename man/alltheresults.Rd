@@ -2,7 +2,7 @@
 % Please edit documentation in R/all_the_results.R
 \name{alltheresults}
 \alias{alltheresults}
-\title{Extract and process DESeq2 results}
+\title{Process and extract all results for a given contrast from DESeq2 or limma analysis}
 \usage{
 alltheresults(object, resuSet, contrast, FDR, anns, species)
 }
@@ -27,6 +27,16 @@ LFC shrinkage results, result tables, and interactive tables.
 This function extracts and processes DESeq2 results for a given contrast,
 performs LFC shrinkage, and generates various result tables and plots.
 }
+\section{sections present in myResuSet}{
+\itemize{
+\item res_DESeq / fitted_model -> DESeq2 results object / limma model
+\item tbl_res_all -> Data frame of all DESeq2 results
+\item tbl_res_DE -> Data frame of significant DESeq2 results
+\item etbl_res_DE -> Interactive table of significant DESeq2 results
+\item topGO_tbl -> topGO results table (not implemented in this script)
+}
+}
+
 \examples{
 \dontrun{
 resuSet <- list()

@@ -9,9 +9,6 @@ save_results(params, objects)
 \arguments{
 \item{params}{A list containing the following elements:
 \describe{
-\item{\code{workflow}}{A string specifying the workflow type. Valid values are "se", "dds", "se_vdx", "se_dds".}
-\item{\code{run_computations}}{A logical value indicating whether computations are run.}
-\item{\code{analysis_folder}}{A string specifying the folder where analysis results should be saved.}
 \item{\code{analysis_name}}{A string specifying the name of the analysis.}
 \item{\code{save_results}}{A logical value indicating whether to save the results object.}
 }}
@@ -28,7 +25,6 @@ save_results(params, objects)
 A message indicating that the objects were saved successfully.
 }
 \description{
-This function saves multiple R objects to disk based on specified conditions and parameters.
-It validates the input parameters and objects, creates necessary directories, and saves the objects
-in \code{.rds} format according to the workflow and other conditions provided.
+This function saves multiple R objects to disk based on a list given as argument.
+It ccreates necessary directories, and saves the objects in \code{.rds} format according to their name in the list.
 }
