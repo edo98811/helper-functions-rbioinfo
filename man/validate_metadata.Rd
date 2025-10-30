@@ -15,8 +15,7 @@ data frame should correspond to the row names of the \code{rowData} in the
 row names of the \code{metadata_df} match the row names of the \code{rowData} in this object.}
 }
 \value{
-Returns \code{TRUE} if the row names match. If the row names do not match,
-the function throws an error.
+A \code{S4Vectors::DataFrame} containing the validated metadata.
 }
 \description{
 This function checks whether the row names of a metadata data frame match
