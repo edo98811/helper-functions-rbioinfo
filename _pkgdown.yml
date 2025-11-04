@@ -1,0 +1,29 @@
+template:
+  bootstrap: 5
+
+url: https://edo98811.github.io/helper-functions-rbioinfo
+
+navbar:
+  title: "helper-functions-rbioinfo"
+  left:
+    - text: "Reference"
+      href: reference/index.html
+    - text: "Articles"
+      menu:
+        - text: "Getting Started"
+          href: articles/getting-started.html
+
+
+home:
+  sidebar:
+    structure: [links, license, authors, dev-status]
+
+authors:
+  Your Name: Edoardo Filippi
+    href: https://github.com/edo98811
+
+repo:
+  url:
+    home: https://github.com/edo98811/helper-functions-rbioinfo
+    issue: https://github.com/edo98811/helper-functions-rbioinfo/issues
+
