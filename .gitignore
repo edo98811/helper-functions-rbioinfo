@@ -17,3 +17,5 @@ report_templates/
 *.code-workspace
 
 old
+inst/doc
+docs

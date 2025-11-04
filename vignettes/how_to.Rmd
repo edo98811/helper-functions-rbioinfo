@@ -1,0 +1,224 @@
+---
+title: "how_to"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{how_to}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r packages}
+  library("macrophage")
+  library("DESeq2")
+  library("org.Hs.eg.db")
+  library("AnnotationDbi")
+  library("clusterProfiler")
+  library("limma")
+  library("edgeR")
+  library("DeeDeeExperiment")
+```
+
+```{r setup}
+library(rbioinfoHelper)
+```
+
+# Setting up parameters
+
+Normally these parameters can be set in the yaml header of the Rmd file, making the analysis easy to reproduce.
+```{r setup}
+params <- list(
+  # data parameters, they can be also empty
+  source_object = system.file("extdata", "macrophage.RDS", package = "rbioinfoHelper"),
+  metadata_file = "", # we dont want to load metadata
+  analysis_name = "example_analysis", # where the results will be saved, and from where they will be loaded
+  
+  # analysis parameters
+  create_annotation_df = TRUE,
+  run_computations = TRUE,
+  save_results = TRUE,
+  
+  # output parameters
+  output_directory = "results/",
+  output_name = "example_analysis"
+)
+```
+
+
+# Importing files into R and preparing workspace
+
+We start by importing all the necessary data. We actually already ran the analysis adn the data is stored in ext/instdata. This means we can simply run the prepare workspace command. We also did not prepare the annotations
+
+```{r load-data}
+prepare_workspace(params) # to set up the environment (load the starting object, metadata
+load_results(params) # load results if we want to skip computations
+
+rownames(gse) <- substr(rownames(gse), 1, 15) # per togliere tutto quello dopo il punto
+
+```
+
+# Creating DeeDeeExperiment object
+
+```{r create-dde}
+# create DeeDeeExperiment object
+dde <- DeeDeeExperiment(gse)
+```
+
+# DESeq2 analysis
+
+```{r dds-creation}
+# visualizedesign matrix
+dds <- DESeqDataSet(gse, design = ~ condition)
+
+keep <- rowSums(counts(dds) >= 10) >= 6
+dds <- dds[keep, ]
+
+dds <- DESeq(dds)
+```
+
+# Gene annotation
+
+To create the gene annotation tables (if create_annotation_df = TRUE)
+
+```{r gene_annotation, eval = TRUE}
+create_annotations(params, rownames(dde))
+```
+
+## Contrasts
+
+```{r gene_annotation, eval = TRUE}
+contrasts_list <- c(
+  "conditionIFNg_vs_naive"
+)
+```
+
+Here to plot the results, same thing if using another package (eg limma).
+
+```{r de}
+# Add all the 
+if (params$run_computations) {
+  for (contrast_name in contrasts_list) {
+
+    res <- results(dds, name = contrast_name, alpha = FDR)
+    
+    # Variance shrinkage 
+    res <- lfcShrink(dds, coef = contrast_name, res = res, type = "apeglm")
+    
+    dde <- addDEA(dde,res)
+    dde <- renameDEA(dde, "res", contrast_name)
+
+  }
+}
+```
+
+```{r, echo = FALSE,include = FALSE, eval = T}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
+## Results
+```{r de-tables, results = 'asis'}
+
+for (contrast_name in contrasts_list){
+  
+  table <- data.frame(DEA(dde, contrast_name, format = "original"))
+  table <- dea_for_report(table, anns, interactive = TRUE, alpha = FDR)
+  show_interactive_table(table, paste0("DE results results for ", contrast_name), knitting = TRUE)
+  print(ideal::plot_ma(DEA(dde, contrast_name, format = "original"), ylim = c(-2,2), title = contrast_name, FDR = FDR)) 
+
+}
+
+```
+
+
+# Enrichment
+
+## Analysis with topGO
+```{r setup-enrichment}
+expressed_ENSEMBL <- rownames(dds)[rowSums(assay(dds)) > 0]
+expressed_SYMBOL <- anns$SYMBOL[match(expressed_ENSEMBL, anns$ENSEMBL)]
+```
+
+```{r enrichment, eval = TRUE}
+# enrichment with topGO
+mapping <- "org.Hs.eg.db"
+
+# enrichment with topGO
+if (params$run_computations) {
+  for (dea_name in names(getDEAList(dde))) {
+    
+    dea_table <- DEA(dde, dea_name, format = "original")
+    dea_table <- dea_table[rowSums(is.na(dea_table)) == 0, ]
+    if (!sum(dea_table$padj < FDR)) next # skip if no de
+    dea_table <- dea_table[dea_table$padj < FDR, ]
+    
+    # Run topGO enrichment
+    topGO_results <- mosdef::run_topGO(
+      de_genes = anns$SYMBOL[match(rownames(dea_table), anns$ENSEMBL)],
+      bg_genes = expressed_SYMBOL,
+      ontology = "BP",
+      gene_id = "symbol",
+      add_gene_to_terms = TRUE,
+      mapping = mapping
+    )
+    
+    # Add the fea to the
+    dde <- addFEA(
+      dde,
+      topGO_results,
+      de_name = dea_name
+    )
+    
+    dde <- renameFEA(dde, "topGO_results", paste0(dea_name, "_fea"))
+    dde <- linkDEAandFEA(dde, dea_name, paste0(dea_name, "_fea"), force = FALSE)
+  }
+}
+
+```
+
+```{r, echo = FALSE,include = FALSE}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
+## Results
+```{r enrichment-tables, results = 'asis'}
+
+for (contrast_fea in names(get_fea_list_report(dde))){
+  
+  table <- FEA(dde, contrast_fea, format = "original")
+  table <- fea_for_report(table, interactive = TRUE, alpha = FDR)
+  show_interactive_table(table, paste0("Enrichment results for ", contrast_name), knitting = TRUE)
+}
+```
+
+
+<!-- ---- End of section-08-enrichment.Rmd---- -->
+
+
+
+<!-- ---- Start of section-09-save.Rmd---- -->
+
+# Save 
+
+```{r save, eval=TRUE}
+  save_results(
+      params, 
+      list(dde = dde, anns = anns)
+      )
+```
+
+
+# Session Information {-}
+
+This document has been generated with...
+
+```{r}
+sessionInfo()
+```
