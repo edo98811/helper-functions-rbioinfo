@@ -22,7 +22,19 @@ Imports:
   DeeDeeExperiment,
   ggplot2
 Suggests: 
-    rmarkdown,
-    testthat (>= 3.0.0)
+  rmarkdown,
+  testthat (>= 3.0.0),
+  macrophage,
+  DESeq2,
+  org.Hs.eg.db,
+  AnnotationDbi,
+  clusterProfiler,
+  limma,
+  edgeR,
+  DeeDeeExperiment,
+  GO.db,
+  topGO,
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+URL: https://github.com/edo98811/helper-functions-rbioinfo
+BugReports: https://github.com/edo98811/helper-functions-rbioinfo/issues
