@@ -170,7 +170,7 @@ fea_for_report <- function(fea_table, interactive = TRUE, alpha = 0.05, pvalue_c
 
   message("Extracting tables...")
   fea_table <- fea_table[rowSums(is.na(fea_table)) == 0, ] # remove rows with NA
-  browser()
+
   if (alpha < 1) fea_table <- fea_table[fea_table[[pvalue_column]] < alpha, ]
   if (nrow(fea_table) == 0) {
     warning("No rows remaining after applying the alpha threshold.")

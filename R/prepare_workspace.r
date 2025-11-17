@@ -39,29 +39,31 @@ prepare_workspace <- function(params) {
   object_path <- file.path(dir_path, "anns.rds")
 
   if (!file.exists(object_path)) {
-    warning("The anns file does not exist: ", object_path)
+    warning("The anns file does not exist or is not given: ", object_path, "\n")
   } else {
     anns <- readRDS(object_path)
     assign("anns", anns, envir = parent.frame())
-    message(sprintf("Loaded 'anns' object from %s", object_path))
+    message(sprintf("Loaded 'anns' object from %s", object_path, "\n"))
   }
 
   # Load the metadata file (CSV or Excel) based on params$metadata
   metadata_path <- params$metadata_file
 
   if (!file.exists(metadata_path)) {
-    warning("The metadata file does not exist: ", metadata_path)
+    warning("The metadata file does not exist: ", metadata_path, "\n")
+  } else {
+    # Determine file type and load accordingly
+    if (grepl("\\.csv$", metadata_path, ignore.case = TRUE)) {
+      metadata <- read.csv(metadata_path, stringsAsFactors = FALSE)
+    } else if (grepl("\\.(xls|xlsx)$", metadata_path, ignore.case = TRUE)) {
+      metadata <- readxl::read_excel(metadata_path)
+      message(sprintf("Loaded 'metadata' object from %s \n", metadata_path))
+    } else {
+      stop("Unsupported file format for metadata. Please provide a CSV or Excel file. \n")
+    }
   }
 
-  # Determine file type and load accordingly
-  if (grepl("\\.csv$", metadata_path, ignore.case = TRUE)) {
-    metadata <- read.csv(metadata_path, stringsAsFactors = FALSE)
-  } else if (grepl("\\.(xls|xlsx)$", metadata_path, ignore.case = TRUE)) {
-    metadata <- readxl::read_excel(metadata_path)
-    message(sprintf("Loaded 'metadata' object from %s", metadata_path))
-  } else {
-    stop("Unsupported file format for metadata. Please provide a CSV or Excel file.")
-  }
+
 
   assign("metadata", metadata, envir = parent.frame())
 

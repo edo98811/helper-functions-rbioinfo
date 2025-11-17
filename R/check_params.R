@@ -39,10 +39,8 @@ check_params <- function(params_list) {
     "analysis_name",
     "source_object",
     "metadata_file",
-    # "subset_object",
     "species",
     "create_annotation_df",
-    # "workflow",
     "save_results"
   )
 
@@ -53,12 +51,6 @@ check_params <- function(params_list) {
     warning(paste("The following required parameters are missing:", paste(missing_names, collapse = ", ")))
     return(FALSE)
   }
-
-  # Validate workflow parameter
-  # valid_workflows <- c("se", "se_vdx", "se_dds", "dds", "vdx", "se_dde", "dde")
-  # if (!params$workflow %in% valid_workflows) {
-  #   stop("Invalid workflow type. Accepted values are: ", paste(valid_workflows, collapse = ", "))
-  # }
 
 
   if (!params_list$species %in% c("Hs", "Mm")) {

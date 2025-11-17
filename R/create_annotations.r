@@ -2,6 +2,7 @@
 #'
 #' This function generates annotations for the features in a `SummarizedExperiment` object
 #' by mapping identifiers between different annotation types (e.g., SYMBOL, ENSEMBL, ENTREZID, UNIPROT).
+#' The dataframe is created in the global environment with the specified object name.
 #'
 #' @param params A list containing parameters for the function. Must include the `species` key,
 #'        which specifies the species. Supported values are `"Mm"` for mouse and `"Hs"` for human.
@@ -12,9 +13,6 @@
 #'        Default is `c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT")`.
 #' @param object_name A character string specifying the name of the object to assign the annotations to.
 #'
-#' @return A data frame containing the requested annotations. The row names of the returned data frame
-#'         match the row names of the input `SummarizedExperiment` object, and the column names correspond
-#'         to the requested annotation types. NULL if `params$create_annotation_df` is FALSE.
 #'
 #' @details
 #' The function uses the `AnnotationDbi` package to map identifiers between different annotation types.
@@ -85,7 +83,7 @@ create_annotations <- function(params, keys_list, source_type = "ENSEMBL", colum
   rownames(anns) <- keys_list
 
   assign(object_name, anns, envir = parent.frame())
-  return(anns)
+  invisible(TRUE)
 }
 
 create_column <- function(keys_list, source_type, destination_type, orgdb) {
