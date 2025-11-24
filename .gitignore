@@ -8,11 +8,6 @@ report_templates/
 # RStudio files
 .Rproj.user/
 *.Rproj
-<<<<<<< HEAD
-.DS_Store
-
-docs/
-=======
 *.Rhistory
 *.RData
 *.Ruserdata
@@ -24,4 +19,3 @@ docs/
 old
 inst/doc
 docs
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1

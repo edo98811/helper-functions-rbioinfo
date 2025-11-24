@@ -15,7 +15,6 @@ knitr::opts_chunk$set(
 ```
 
 ```{r packages}
-<<<<<<< HEAD
 library("macrophage")
 library("DESeq2")
 library("org.Hs.eg.db")
@@ -26,16 +25,6 @@ library("edgeR")
 library("DeeDeeExperiment")
 library("GO.db")
 library("topGO")
-=======
-  library("macrophage")
-  library("DESeq2")
-  library("org.Hs.eg.db")
-  library("AnnotationDbi")
-  library("clusterProfiler")
-  library("limma")
-  library("edgeR")
-  library("DeeDeeExperiment")
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 ```{r setup}
@@ -45,16 +34,6 @@ library(rbioinfoHelper)
 # Setting up parameters
 
 Normally these parameters can be set in the yaml header of the Rmd file, making the analysis easy to reproduce.
-<<<<<<< HEAD
-```{r setup-par}
-devtools::load_all()
-params <- list(
-  # data parameters, they can be also empty
-  source_object = system.file("extdata", "gse.RDS", package = "rbioinfoHelper"),
-  metadata_file = "", # we dont want to load metadata
-  analysis_name = "example_analysis", # where the results will be saved, and from where they will be loaded
-
-=======
 ```{r setup}
 params <- list(
   # data parameters, they can be also empty
@@ -62,62 +41,20 @@ params <- list(
   metadata_file = "", # we dont want to load metadata
   analysis_name = "example_analysis", # where the results will be saved, and from where they will be loaded
   
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
   # analysis parameters
   create_annotation_df = TRUE,
   run_computations = TRUE,
   save_results = TRUE,
-<<<<<<< HEAD
-  species = "Hs",
-
-=======
   
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
   # output parameters
   output_directory = "results/",
   output_name = "example_analysis"
 )
-<<<<<<< HEAD
-stopifnot(check_params(params))
-=======
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 
 # Importing files into R and preparing workspace
 
-<<<<<<< HEAD
-We start by importing all the necessary data. We actually already ran the analysis adn the data is stored in ext/instdata. This means we can simply run the prepare workspace command. We also did not prepare the annotations.
-
-```{r load-data}
-prepare_workspace(params) # to set up the environment (load the starting object, metadata
-gse <- source_object
-load_results(params) # load results if we want to skip computations
-```
-
-The macrophage dataset requires BP ontology, we delete all the genes from the dataset that are not mapped in it.
-
-```{r check-go}
-rownames(gse) <- gsub("\\..*$", "", rownames(gse)) # To remove gene version
-
-ontology_df <- AnnotationDbi::select(
-  org.Hs.eg.db,
-  keys = rownames(gse),
-  columns = c("GO", "SYMBOL"),
-  keytype = "ENSEMBL"
-)
-
-# remove rows with NA GO terms
-ontology_df <- ontology_df[!is.na(ontology_df$GO), ]
-ontology_df <- ontology_df[!is.na(ontology_df$SYMBOL), ]
-ontology_df <- ontology_df[ontology_df$ONTOLOGY == "BP", ]
-
-# remove duplicates for SYMBOL-GO pairs
-ontology_df <- ontology_df[!duplicated(ontology_df[c("SYMBOL", "GO")]), ]
-
-gse <- gse[rownames(gse) %in% ontology_df$ENSEMBL, ]
-```
-=======
 We start by importing all the necessary data. We actually already ran the analysis adn the data is stored in ext/instdata. This means we can simply run the prepare workspace command. We also did not prepare the annotations
 
 ```{r load-data}
@@ -128,7 +65,6 @@ rownames(gse) <- substr(rownames(gse), 1, 15) # per togliere tutto quello dopo i
 
 ```
 
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 # Creating DeeDeeExperiment object
 
 ```{r create-dde}
@@ -140,72 +76,33 @@ dde <- DeeDeeExperiment(gse)
 
 ```{r dds-creation}
 # visualizedesign matrix
-<<<<<<< HEAD
-if (params$run_computations) {
-  dds <- DESeqDataSet(gse, design = ~condition)
-
-  # keep <- rowSums(counts(dds) >= 10) >= 6
-  # dds <- dds[keep, ]
-
-  dds <- DESeq(dds)
-}
-=======
 dds <- DESeqDataSet(gse, design = ~ condition)
 
 keep <- rowSums(counts(dds) >= 10) >= 6
 dds <- dds[keep, ]
 
 dds <- DESeq(dds)
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 # Gene annotation
 
 To create the gene annotation tables (if create_annotation_df = TRUE)
 
-<<<<<<< HEAD
-```{r gene-annotation, eval = TRUE}
-create_annotations(params, rownames(dde))
-
-# table(anns$SYMBOL[!is.na(anns$SYMBOL)] %in% keys(org.Hs.eg.db, keytype="SYMBOL"))
-=======
 ```{r gene_annotation, eval = TRUE}
 create_annotations(params, rownames(dde))
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 ## Contrasts
 
-<<<<<<< HEAD
-```{r contrasts, eval = TRUE}
-resultsNames(dds)
-contrasts_list <- c(
-  "condition_IFNg_vs_naive"
-)
-FDR <- 0.1
-=======
 ```{r gene_annotation, eval = TRUE}
 contrasts_list <- c(
   "conditionIFNg_vs_naive"
 )
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 Here to plot the results, same thing if using another package (eg limma).
 
 ```{r de}
-<<<<<<< HEAD
-# Add all the
-if (params$run_computations) {
-  for (contrast_name in contrasts_list) {
-    res <- results(dds, name = contrast_name, alpha = FDR)
-
-    # Variance shrinkage
-    res <- lfcShrink(dds, coef = contrast_name, res = res, type = "apeglm")
-
-    dde <- addDEA(dde, res)
-    dde <- renameDEA(dde, "res", contrast_name)
-=======
 # Add all the 
 if (params$run_computations) {
   for (contrast_name in contrasts_list) {
@@ -218,7 +115,6 @@ if (params$run_computations) {
     dde <- addDEA(dde,res)
     dde <- renameDEA(dde, "res", contrast_name)
 
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
   }
 }
 ```
@@ -230,14 +126,6 @@ DT::datatable(matrix())
 
 ## Results
 ```{r de-tables, results = 'asis'}
-<<<<<<< HEAD
-for (contrast_name in contrasts_list) {
-  table <- data.frame(DEA(dde, contrast_name, format = "original"))
-  table <- dea_for_report(table, anns, interactive = TRUE, alpha = FDR)
-  show_interactive_table(table, paste0("DE results results for ", contrast_name), knitting = TRUE)
-  print(ideal::plot_ma(DEA(dde, contrast_name, format = "original"), ylim = c(-2, 2), title = contrast_name, FDR = FDR))
-}
-=======
 
 for (contrast_name in contrasts_list){
   
@@ -248,7 +136,6 @@ for (contrast_name in contrasts_list){
 
 }
 
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 
@@ -258,13 +145,6 @@ for (contrast_name in contrasts_list){
 ```{r setup-enrichment}
 expressed_ENSEMBL <- rownames(dds)[rowSums(assay(dds)) > 0]
 expressed_SYMBOL <- anns$SYMBOL[match(expressed_ENSEMBL, anns$ENSEMBL)]
-<<<<<<< HEAD
-expressed_SYMBOL <- expressed_SYMBOL[!is.na(expressed_SYMBOL)]
-
-# expressed_SYMBOL <- sample(keys(org.Hs.eg.db, keytype="SYMBOL"), 5000)
-# de_genes <- sample(expressed_SYMBOL, 200)
-=======
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 ```{r enrichment, eval = TRUE}
@@ -274,28 +154,11 @@ mapping <- "org.Hs.eg.db"
 # enrichment with topGO
 if (params$run_computations) {
   for (dea_name in names(getDEAList(dde))) {
-<<<<<<< HEAD
-=======
     
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
     dea_table <- DEA(dde, dea_name, format = "original")
     dea_table <- dea_table[rowSums(is.na(dea_table)) == 0, ]
     if (!sum(dea_table$padj < FDR)) next # skip if no de
     dea_table <- dea_table[dea_table$padj < FDR, ]
-<<<<<<< HEAD
-
-    # Run topGO enrichment
-    de_genes <- anns$SYMBOL[match(rownames(dea_table), anns$ENSEMBL)]
-    topGO_results <- mosdef::run_topGO(
-      de_genes = de_genes,
-      bg_genes = expressed_SYMBOL,
-      ontology = "BP",
-      gene_id = "ENSEMBL",
-      add_gene_to_terms = TRUE,
-      mapping = mapping
-    )
-
-=======
     
     # Run topGO enrichment
     topGO_results <- mosdef::run_topGO(
@@ -307,26 +170,17 @@ if (params$run_computations) {
       mapping = mapping
     )
     
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
     # Add the fea to the
     dde <- addFEA(
       dde,
       topGO_results,
       de_name = dea_name
     )
-<<<<<<< HEAD
-
-=======
     
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
     dde <- renameFEA(dde, "topGO_results", paste0(dea_name, "_fea"))
     dde <- linkDEAandFEA(dde, dea_name, paste0(dea_name, "_fea"), force = FALSE)
   }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 ```{r, echo = FALSE,include = FALSE}
@@ -336,13 +190,9 @@ DT::datatable(matrix())
 
 ## Results
 ```{r enrichment-tables, results = 'asis'}
-<<<<<<< HEAD
-for (contrast_fea in names(get_fea_list_report(dde))) {
-=======
 
 for (contrast_fea in names(get_fea_list_report(dde))){
   
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
   table <- FEA(dde, contrast_fea, format = "original")
   table <- fea_for_report(table, interactive = TRUE, alpha = FDR)
   show_interactive_table(table, paste0("Enrichment results for ", contrast_name), knitting = TRUE)
@@ -350,15 +200,6 @@ for (contrast_fea in names(get_fea_list_report(dde))){
 ```
 
 
-<<<<<<< HEAD
-# Save 
-
-```{r save, eval=TRUE}
-save_results(
-  params,
-  list(dde = dde, anns = anns)
-)
-=======
 <!-- ---- End of section-08-enrichment.Rmd---- -->
 
 
@@ -372,7 +213,6 @@ save_results(
       params, 
       list(dde = dde, anns = anns)
       )
->>>>>>> 7f09e5976dab6ce44d7a925788075638850044a1
 ```
 
 
