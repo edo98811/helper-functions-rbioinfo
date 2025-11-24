@@ -1,9 +1,0 @@
-
-# Convert dds from DE
-
-Let's check the number of assigned reads per sample as a proxy of the sequencing depth in the main dds object.
-
-
-```{r assigning-design}
-design(dds) <- design_definition 
-```
