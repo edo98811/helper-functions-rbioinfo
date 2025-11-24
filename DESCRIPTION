@@ -1,18 +1,40 @@
 Package: rbioinfoHelper
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Bioinformatics Helper Functions
+Version: 0.4.2
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Edoardo", "Filippi", , "edoardo.filippi@uni-mainz.de.com", role = c("aut", "cre"))
+Description: Bioinformatics Helper Functions to create reports.
+License: use_mit_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+Depends: R (>= 4.5.0)
 RoxygenNote: 7.3.2
 Imports:
-    biomaRt,
-    SummarizedExperiment,
-    DESeq2,
-    purrr,
-    readxl,
-    S4Vectors
+  limma,
+  DESeq2,
+  edgeR,
+  AnnotationDbi,
+  org.Hs.eg.db,
+  org.Mm.eg.db,
+  htmltools,
+  DT,
+  knitr,
+  DeeDeeExperiment,
+  ggplot2
+Suggests: 
+  rmarkdown,
+  testthat (>= 3.0.0),
+  macrophage,
+  DESeq2,
+  org.Hs.eg.db,
+  AnnotationDbi,
+  clusterProfiler,
+  limma,
+  edgeR,
+  DeeDeeExperiment,
+  GO.db,
+  topGO,
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://github.com/edo98811/helper-functions-rbioinfo
+BugReports: https://github.com/edo98811/helper-functions-rbioinfo/issues

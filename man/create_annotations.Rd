@@ -2,24 +2,41 @@
 % Please edit documentation in R/create_annotations.r
 \name{create_annotations}
 \alias{create_annotations}
-\title{Create Annotations}
+\title{Create Annotations for SummarizedExperiment Object}
 \usage{
-create_annotations(dds)
+create_annotations(
+  params,
+  keys_list,
+  source_type = "ENSEMBL",
+  columns = c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT"),
+  object_name = "anns"
+)
 }
 \arguments{
-\item{dds}{A DESeqDataSet object. The function will stop if the provided object is not of class 'DESeqDataSet'.}
+\item{params}{A list containing parameters for the function. Must include the \code{species} key,
+which specifies the species. Supported values are \code{"Mm"} for mouse and \code{"Hs"} for human.}
+
+\item{keys_list}{A character vector containing the identifiers from the row names of the \code{SummarizedExperiment} object.}
+
+\item{source_type}{A character string specifying the type of identifier used in the row names of \code{se}.
+Supported values include \code{"ENSEMBL"}, \code{"SYMBOL"}, \code{"UNIPROT"}, etc.}
+
+\item{columns}{A character vector specifying the types of annotations to retrieve.
+Default is \code{c("SYMBOL", "ENSEMBL", "ENTREZID", "UNIPROT")}.}
+
+\item{object_name}{A character string specifying the name of the object to assign the annotations to.}
 }
 \value{
-This function does not return a value. It saves the generated annotations and annotation dataframe as RDS files in the "analyses_data" directory.
-Additionally, it assigns the annotations and annotation dataframe to the parent environment.
+A data frame containing the requested annotations. The row names of the returned data frame
+match the row names of the input \code{SummarizedExperiment} object, and the column names correspond
+to the requested annotation types. NULL if \code{params$create_annotation_df} is FALSE.
 }
 \description{
-This function generates annotation datasets from a DESeqDataSet object and saves them as RDS files.
+This function generates annotations for the features in a \code{SummarizedExperiment} object
+by mapping identifiers between different annotation types (e.g., SYMBOL, ENSEMBL, ENTREZID, UNIPROT).
 }
-\examples{
-\dontrun{
-dds <- DESeqDataSet(...) # Create or load a DESeqDataSet object
-create_annotations(dds)
-}
-
+\details{
+The function uses the \code{AnnotationDbi} package to map identifiers between different annotation types.
+If any entries cannot be mapped, a warning is issued, and \code{NA} values are returned for those entries.
+If all entries fail to map, the function stops with an error.
 }

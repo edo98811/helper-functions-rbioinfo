@@ -2,44 +2,22 @@
 % Please edit documentation in R/prepare_workspace.r
 \name{prepare_workspace}
 \alias{prepare_workspace}
-\title{Prepare Workspace}
+\title{Prepare Workspace for Bioinformatics Analysis}
 \usage{
 prepare_workspace(params)
 }
 \arguments{
 \item{params}{A list containing the following elements:
 \itemize{
-\item \code{sample_metadata_file}: Path to the experiment metadata file (xlsx format).
-\item \code{load_gse}: Logical, whether to load the GSE object (default is FALSE).
-\item \code{load_complete_dds}: Logical, whether to load the complete DDS object (default is FALSE).
-\item \code{complete_dds_source}: Path to the complete DDS source file.
+\item \code{workflow}: A string specifying the workflow type. Supported values are \code{"se"}, \code{"se_vdx"}, \code{"se_dds"}, \code{"dds"}, or \code{"se_dds"}.
+\item \code{run_computations}: A logical value indicating whether computations should be run (not used in the current implementation).
+\item \code{analysis_name}: A string specifying the name of the analysis (not used in the current implementation).
+\item \code{metadata_file}: A string specifying the path to the metadata file (CSV or Excel format).
 }}
 }
 \value{
-This function does not return a value. It assigns the loaded data to the global environment.
+Logical \code{TRUE} if the workspace is successfully prepared.
 }
 \description{
-This function prepares the workspace by loading various data files and assigning them to the global environment.
-}
-\details{
-The function performs the following steps:
-\itemize{
-\item Checks if the experiment metadata file exists. If not, it stops with an error.
-\item Loads the experiment metadata from the specified file and assigns it to the global environment as \code{experiment_metadata}.
-\item If \code{load_gse} is TRUE, attempts to load the GSE object from "analyses_data/gse.RDS" and assigns it to the global environment as \code{gse}.
-\item If \code{load_complete_dds} is TRUE, attempts to load the complete DDS object from the specified source file and assigns it to the global environment as \code{complete_dds}.
-\item Checks if the annotation files ("anns.RDS" and "anno_df.RDS") exist in the "analyses_data" directory. If they exist, loads them and assigns them to the global environment as \code{anns} and \code{anno_df}, respectively.
-}
-}
-\examples{
-\dontrun{
-params <- list(
-  sample_metadata_file = "path/to/metadata.xlsx",
-  load_gse = TRUE,
-  load_complete_dds = TRUE,
-  complete_dds_source = "path/to/complete_dds.RDS"
-)
-prepare_workspace(params)
-}
-
+This function initializes the workspace for bioinformatics analysis by loading required objects and metadata files.
 }
